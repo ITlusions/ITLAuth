@@ -20,3 +20,9 @@ classifiers = [
 
 [project.scripts]
 itl-oidc-setup = "itl_k8s_oidc.cli:main"
+
+[tool.hatchling.build.targets.wheel]
+packages = ["src/itl_k8s_oidc"]
+
+[tool.hatchling.build.sources]
+"src" = ""
