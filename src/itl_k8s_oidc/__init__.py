@@ -5,4 +5,14 @@ Automates installation of krew and oidc-login plugin, and configures
 Kubernetes OIDC authentication.
 """
 
-__version__ = "0.1.0"
+try:
+    from importlib.metadata import version
+except ImportError:
+    # Python < 3.8
+    from importlib_metadata import version
+
+try:
+    __version__ = version("itl-k8s-oidc")
+except Exception:
+    # Fallback for development/editable installs
+    __version__ = "0.1.0-dev"

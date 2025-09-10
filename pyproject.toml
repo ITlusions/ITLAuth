@@ -1,15 +1,15 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=80", "wheel", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "itl-k8s-oidc"
-version = "0.1.0"
-description = "One-command setup: Kubernetes OIDC via Keycloak + kubelogin (auto-installs krew + oidc-login)."
+dynamic = ["version"]            # version comes from VCS tags
+description = "Kubernetes OIDC via Keycloak + kubelogin automation."
 readme = "README.md"
 requires-python = ">=3.8"
-license = {text = "MIT"}
-authors = [{name="ITlusions", email="noreply@example.com"}]
+license = { text = "MIT" }
+authors = [{ name = "ITlusions", email = "noreply@example.com" }]
 keywords = ["kubernetes","oidc","keycloak","kubelogin","krew"]
 classifiers = [
   "Programming Language :: Python :: 3",
@@ -21,8 +21,12 @@ classifiers = [
 [project.scripts]
 itl-oidc-setup = "itl_k8s_oidc.cli:main"
 
-[tool.hatchling.build.targets.wheel]
-packages = ["src/itl_k8s_oidc"]
+[tool.setuptools.package-dir]
+"" = "src"
 
-[tool.hatchling.build.sources]
-"src" = ""
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools_scm]
+# accept tags like v0.1.0 or 0.1.0 (SemVer)
+tag_regex = "^v?(?P<version>[0-9]+\\.[0-9]+\\.[0-9]+)$"
