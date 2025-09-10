@@ -12,7 +12,8 @@ except ImportError:
     from importlib_metadata import version
 
 try:
+    # Get version from package metadata
     __version__ = version("itl-k8s-oidc")
 except Exception:
     # Fallback for development/editable installs
-    __version__ = "0.1.0-dev"
+    __version__ = "1.0.2"
