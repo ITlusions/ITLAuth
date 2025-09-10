@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "itl-k8s-oidc"
+version = "0.1.0"
+description = "Automates Kubernetes auth via Keycloak OIDC"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "ITlusions", email = "contact@itlusions.com"}]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "click>=8.0.0",
+    "pyyaml>=6.0",
+    "requests>=2.25.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/ITlusions/ITLAuth"
+Repository = "https://github.com/ITlusions/ITLAuth"
+
+[project.scripts]
+itl-oidc-setup = "itl_k8s_oidc.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["itl_k8s_oidc*"]
+
+[tool.setuptools.package-data]
+itl_k8s_oidc = ["*.yaml", "*.yml", "*.json"]
