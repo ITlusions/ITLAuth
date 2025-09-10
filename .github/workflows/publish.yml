@@ -1,0 +1,26 @@
+name: publish
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # for trusted publishing (recommended)
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install --upgrade pip build
+      - run: python -m build
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.10.3
+        with:
+          skip-existing: true
+          print-hash: true
+          # If not using OIDC Trusted Publishing, uncomment and set PYPI_API_TOKEN in repo secrets:
+          # password: ${{ secrets.PYPI_API_TOKEN }}
