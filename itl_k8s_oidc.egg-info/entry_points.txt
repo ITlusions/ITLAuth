@@ -1,2 +1,0 @@
-[console_scripts]
-itl-oidc-setup = itl_k8s_oidc.cli:main
