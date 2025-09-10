@@ -82,7 +82,7 @@ The tool reads configuration from `~/.config/itl-k8s-oidc/config.json` (Linux/ma
 
 ```json
 {
-  "issuer_url": "https://sso.example.com/realms/itlusions",
+  "issuer_url": "https://sts.itlusions.com/realms/itlusions",
   "client_id": "kubelogin",
   "scopes": "openid,profile,email"
 }
@@ -111,7 +111,7 @@ itl-oidc-setup --help
 
 ## Default Configuration
 
-- **Default issuer**: `https://sso.example.com/realms/itlusions`
+- **Default issuer**: `https://sts.itlusions.com/realms/itlusions`
 - **Default client ID**: `kubelogin`
 - **Default scopes**: `openid,profile,email`
 

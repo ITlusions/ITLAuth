@@ -29,7 +29,7 @@ def create_parser() -> argparse.ArgumentParser:
             "Configuration precedence (highest to lowest): "
             "CLI args > env ITL_OIDC_* > config file > defaults. "
             "Examples: itl-oidc-setup --verify, "
-            "itl-oidc-setup --issuer-url https://sso.example.com/realms/myrealm --save-default"
+            "itl-oidc-setup --issuer-url https://sts.itlusions.com/realms/myrealm --save-default"
         )
     )
     
