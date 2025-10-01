@@ -1,160 +1,175 @@
-# itl-kubectl-oidc-setup
+# ITLAuth - ITlusions Authentication Suite
 
-🚀 **Automated kubectl OIDC setup tool for ITlusions Kubernetes clusters**
+🚀 **Complete## 📚 Documentation
 
-A command-line tool that automatically installs and configures kubectl with OIDC authentication for ITlusions Kubernetes clusters using Keycloak. No more manual configuration steps!
+### 📖 Complete Documentation Hub
+- **[📋 Documentation Index](docs/index.md)** - Complete navigation and overview of all documentation
 
-## ✨ Features
+### 📖 User Guides
+- **[Installation Guide](docs/guides/INSTALLATION.md)** - Complete installation and setup instructions
+- **[API Server Setup](docs/guides/APISERVER-OIDC-SETUP.md)** - Configure Kubernetes API server for OIDC
+- **[Troubleshooting Guide](docs/guides/TROUBLESHOOTING.md)** - Common issues and solutions
+- **[Service Account Management](docs/guides/SERVICE-ACCOUNTS.md)** - Keycloak service account setuputhentication solution for ITlusions Kubernetes clusters**
 
-- 🔧 **Automatic kubectl installation** (if not already installed)
-- 🔌 **kubelogin plugin installation** via krew or direct download
-- 🔐 **OIDC configuration** for ITlusions Keycloak authentication
-- 🌍 **Cross-platform support** (Windows, macOS, Linux)
-- 🎯 **Interactive setup** with colored terminal output
-- ✅ **Authentication testing** to verify configuration
-- 📋 **Smart detection** of existing installations
+ITLAuth provides automated tools and comprehensive guides for setting up OIDC authentication with ITlusions Kubernetes clusters using Keycloak. This suite includes automated setup tools, API server configuration scripts, and service account management utilities.
+
+## ✨ Components
+
+### 🔧 kubectl OIDC Setup Tool
+- **Automatic kubectl installation** (if not already installed)
+- **kubelogin plugin installation** via krew or direct download
+- **OIDC configuration** for ITlusions Keycloak authentication
+- **Cross-platform support** (Windows, macOS, Linux)
+- **Interactive setup** with colored terminal output
+- **Authentication testing** to verify configuration
+
+### � Keycloak Service Account Manager
+- **Centralized service account management** in Keycloak
+- **Client credentials flow** for automation
+- **Group-based permissions** integration
+- **Token management** and refresh capabilities
+
+### ⚙️ API Server Configuration Tools
+- **Automated OIDC configuration** for Kubernetes API server
+- **Backup and restore** functionality
+- **Configuration validation** and testing
+- **Troubleshooting scripts** and diagnostics
 
 ## 🚀 Quick Start
 
-### Installation
+### Option 1: Python Package Installation
 
 ```bash
 pip install itl-kubectl-oidc-setup
-```
-
-### Usage
-
-Simply run the tool and follow the interactive prompts:
-
-```bash
 itl-kubectl-oidc-setup
 ```
 
-### Advanced Usage
+### Option 2: Manual Script Execution
 
 ```bash
-# Specify a custom cluster name
-itl-kubectl-oidc-setup --cluster my-cluster
+# Clone this repository
+git clone https://github.com/ITlusions/ITLAuth.git
+cd ITLAuth
 
-# Skip authentication testing
-itl-kubectl-oidc-setup --no-test
-
-# Use custom Keycloak URL
-itl-kubectl-oidc-setup --keycloak-url https://auth.example.com
-
-# Help
-itl-kubectl-oidc-setup --help
+# Run the setup script
+python docs/scripts/setup_kubectl_oidc.py
 ```
 
-## 📋 Prerequisites
+### Option 3: PowerShell (Windows)
 
-- Python 3.8 or higher
-- Internet connection for downloading kubectl/kubelogin (if needed)
-- Access to ITlusions Kubernetes cluster
+```powershell
+# Clone this repository
+git clone https://github.com/ITlusions/ITLAuth.git
+cd ITLAuth
 
-## 🔧 What It Does
+# Run PowerShell setup
+.\docs\scripts\Setup-KubectlOIDC.ps1
+```
 
-1. **Detects your operating system** and architecture
-2. **Checks for kubectl** and installs it if missing:
-   - Windows: Uses `winget`
-   - macOS: Uses `homebrew`
-   - Linux: Downloads from official Kubernetes releases
-3. **Installs kubelogin plugin**:
-   - First tries `krew` (if available)
-   - Falls back to direct download
-4. **Configures OIDC authentication** with ITlusions Keycloak:
-   - Sets up cluster configuration
-   - Configures user authentication
-   - Sets context and namespace
-5. **Tests authentication** to ensure everything works
-6. **Provides next steps** and usage instructions
+## � Documentation
 
-## 🏗️ Configuration
+### 📖 User Guides
+- **[Installation Guide](docs/guides/INSTALLATION.md)** - Complete installation and setup instructions
+- **[API Server Setup](docs/guides/APISERVER-OIDC-SETUP.md)** - Configure Kubernetes API server for OIDC
+- **[Troubleshooting Guide](docs/guides/TROUBLESHOOTING.md)** - Common issues and solutions
+- **[Service Account Management](docs/guides/SERVICE-ACCOUNTS.md)** - Keycloak service account setup
 
-The tool configures kubectl with the following OIDC settings:
+### �️ Scripts and Tools
+- **[Setup Scripts](docs/scripts/)** - Automated setup and configuration scripts
+- **[PowerShell Modules](docs/scripts/)** - Windows-specific PowerShell tools
+- **[Python Utilities](docs/scripts/)** - Cross-platform Python tools
+- **[Bash Scripts](docs/scripts/)** - Linux/macOS shell scripts
 
-- **Issuer URL**: `https://sts.itlusions.com/realms/itlusions`
-- **Client ID**: `kubernetes-oidc`
-- **Username Claim**: `preferred_username`
-- **Groups Claim**: `groups`
+### 🔧 Configuration Examples
+- **[kubeconfig Examples](docs/examples/)** - Sample kubeconfig files
+- **[RBAC Configurations](docs/examples/)** - Role-based access control examples
+- **[Keycloak Client Setup](docs/examples/)** - Keycloak client configuration
 
-## 🔐 Authentication Flow
+## 🏗️ Architecture
 
-1. Run `kubectl get pods` (or any kubectl command)
-2. Browser opens automatically for authentication
-3. Login with your ITlusions credentials
-4. Return to terminal - you're authenticated!
+```
+ITLAuth Architecture
+├── Client Tools (kubectl + kubelogin)
+├── OIDC Authentication (Keycloak)
+├── Kubernetes API Server (OIDC enabled)
+└── RBAC (Group-based permissions)
+```
+
+### Authentication Flow
+1. **Client Request** → kubectl command executed
+2. **Token Check** → kubelogin checks for valid token
+3. **Browser Auth** → Opens browser for Keycloak login (if needed)
+4. **Token Exchange** → Receives JWT token from Keycloak
+5. **API Request** → kubectl sends request with Bearer token
+6. **RBAC Check** → Kubernetes validates token and checks permissions
+7. **Response** → Command executed with proper authorization
 
 ## 🛠️ Development
+
+### Repository Structure
+
+```
+ITLAuth/
+├── README.md                    # This file - main documentation
+├── docs/
+│   ├── guides/                  # User guides and tutorials
+│   │   ├── INSTALLATION.md      # Installation instructions
+│   │   ├── APISERVER-OIDC-SETUP.md  # API server configuration
+│   │   ├── TROUBLESHOOTING.md   # Common issues and solutions
+│   │   └── SERVICE-ACCOUNTS.md  # Service account management
+│   ├── scripts/                 # Automation scripts
+│   │   ├── setup_kubectl_oidc.py    # Main Python setup script
+│   │   ├── Setup-KubectlOIDC.ps1    # PowerShell setup script
+│   │   ├── configure-apiserver-oidc.sh  # API server config script
+│   │   ├── keycloak_sa_manager.py   # Service account manager
+│   │   └── persistent_token_manager.py  # Token management
+│   └── examples/                # Configuration examples
+│       ├── kubeconfig-examples/
+│       ├── rbac-examples/
+│       └── keycloak-examples/
+├── src/                        # Source code (if package)
+└── tests/                      # Test files
+```
 
 ### Local Development
 
 ```bash
 # Clone the repository
-git clone https://github.com/ITlusions/itl-kubectl-oidc-setup.git
-cd itl-kubectl-oidc-setup
+git clone https://github.com/ITlusions/ITLAuth.git
+cd ITLAuth
 
-# Install in development mode
+# Install in development mode (if Python package)
 pip install -e .
 
-# Install development dependencies
-pip install -e .[dev]
-
-# Run the tool
-itl-kubectl-oidc-setup
-```
-
-### Running Tests
-
-```bash
-pytest
-```
-
-### Code Formatting
-
-```bash
-black kubectl_oidc_setup/
-flake8 kubectl_oidc_setup/
-```
-
-## 📁 Project Structure
-
-```
-itl-kubectl-oidc-setup/
-├── itl_kubectl_oidc_setup/
-│   ├── __init__.py          # Package metadata and exports
-│   └── __main__.py          # Main application logic
-├── setup.py                 # Package installation configuration
-├── requirements.txt         # Python dependencies
-├── README.md               # This file
-└── LICENSE                 # MIT License
+# Run the tools directly
+python docs/scripts/setup_kubectl_oidc.py
 ```
 
 ## 🔧 Troubleshooting
 
-### Common Issues
+### Quick Fixes
 
 **kubectl not found after installation**
 - Restart your terminal/shell
 - Check your PATH environment variable
-
-**kubelogin plugin fails to install**
-- The tool will try multiple installation methods
-- Check if you have proper permissions
+- See [Installation Guide](docs/guides/INSTALLATION.md) for detailed steps
 
 **Authentication browser doesn't open**
 - Manually copy the URL from terminal output
 - Check your default browser settings
+- See [Troubleshooting Guide](docs/guides/TROUBLESHOOTING.md)
 
 **Permission denied errors**
 - On Windows: Run as Administrator if needed
 - On macOS/Linux: Check file permissions
+- Review security settings
 
 ### Getting Help
 
-1. Check the terminal output for detailed error messages
-2. Run with `--verbose` flag for more detailed logging
-3. Open an issue on [GitHub](https://github.com/ITlusions/itl-kubectl-oidc-setup/issues)
+1. Check the [Documentation](docs/) for detailed guides
+2. Review the [Troubleshooting Guide](docs/guides/TROUBLESHOOTING.md)
+3. Run scripts with `--verbose` flag for detailed logging
+4. Open an issue on [GitHub](https://github.com/ITlusions/ITLAuth/issues)
 
 ## 🤝 Contributing
 
@@ -164,7 +179,14 @@ We welcome contributions! Please:
 2. Create a feature branch
 3. Make your changes
 4. Add tests if applicable
-5. Submit a pull request
+5. Update documentation
+6. Submit a pull request
+
+### Development Guidelines
+- Follow existing code style
+- Add tests for new features
+- Update documentation
+- Test on multiple platforms when possible
 
 ## 📄 License
 
@@ -172,14 +194,26 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🏢 About ITlusions
 
-This tool is developed and maintained by ITlusions. For more information about our services and infrastructure, visit [www.itlusions.com](https://www.itlusions.com).
+ITLAuth is developed and maintained by ITlusions. This suite provides enterprise-grade OIDC authentication for Kubernetes environments.
+
+For more information about our services and infrastructure, visit [www.itlusions.com](https://www.itlusions.com).
 
 ## 🔗 Related Projects
 
-- [ITL.K8s](https://github.com/ITlusions/ITL.K8s) - Kubernetes cluster configuration
-- [ITL.Keycloack.Tenants](https://github.com/ITlusions/ITL.Keycloack.Tenants) - Keycloak tenant management
-- [ITL.ArgoCD](https://github.com/ITlusions/ITL.ArgoCD) - ArgoCD configuration and applications
+- **[ITL.K8s](https://github.com/ITlusions/ITL.K8s)** - Kubernetes cluster configuration and management
+- **[ITL.Keycloak.Tenants](https://github.com/ITlusions/ITL.Keycloack.Tenants)** - Multi-tenant Keycloak management
+- **[ITL.ArgoCD](https://github.com/ITlusions/ITL.ArgoCD)** - GitOps continuous deployment
+- **[ITL.Istio](https://github.com/ITlusions/ITL.Istio)** - Service mesh configuration
+- **[ITL.Prometheus](https://github.com/ITlusions/ITL.Prometheus)** - Monitoring and observability
+
+## 🚀 Quick Links
+
+- **[Get Started](docs/guides/INSTALLATION.md)** - Installation and setup
+- **[API Server Setup](docs/guides/APISERVER-OIDC-SETUP.md)** - Configure your cluster
+- **[Scripts](docs/scripts/)** - Automation tools
+- **[Examples](docs/examples/)** - Configuration examples
+- **[Troubleshooting](docs/guides/TROUBLESHOOTING.md)** - Common issues
 
 ---
 
-Made with ❤️ by [ITlusions](https://www.itlusions.com)
+Made with ❤️ by [ITlusions](https://www.itlusions.com) for the Kubernetes community
