@@ -1,128 +1,185 @@
-# itl-k8s-oidc
+# itl-kubectl-oidc-setup
 
-**One-command setup: Kubernetes OIDC via Keycloak + kubelogin (auto-installs krew + oidc-login)**
+🚀 **Automated kubectl OIDC setup tool for ITlusions Kubernetes clusters**
 
-## What it does
+A command-line tool that automatically installs and configures kubectl with OIDC authentication for ITlusions Kubernetes clusters using Keycloak. No more manual configuration steps!
 
-The `itl-k8s-oidc` package provides a CLI tool `itl-oidc-setup` that automates the entire setup process for Kubernetes authentication via Keycloak OIDC. It handles:
+## ✨ Features
 
-1. **Dependency checking**: Verifies kubectl is available
-2. **Automatic installation**: Downloads and installs krew (kubectl plugin manager) if needed
-3. **Plugin installation**: Installs the `oidc-login` plugin via krew
-4. **OIDC configuration**: Runs `kubectl oidc-login setup` with proper parameters
-5. **Optional verification**: Tests authentication with `kubectl auth whoami`
+- 🔧 **Automatic kubectl installation** (if not already installed)
+- 🔌 **kubelogin plugin installation** via krew or direct download
+- 🔐 **OIDC configuration** for ITlusions Keycloak authentication
+- 🌍 **Cross-platform support** (Windows, macOS, Linux)
+- 🎯 **Interactive setup** with colored terminal output
+- ✅ **Authentication testing** to verify configuration
+- 📋 **Smart detection** of existing installations
 
-## How it works
+## 🚀 Quick Start
 
-The tool uses a **public OIDC client with PKCE** for secure authentication. It supports both interactive browser-based auth and **device code flow** for headless environments.
-
-Configuration follows a clear precedence order:
-1. **CLI arguments** (highest priority)
-2. **Environment variables** (`ITL_OIDC_ISSUER_URL`, etc.)
-3. **Configuration file** (`~/.config/itl-k8s-oidc/config.json`)
-4. **Baked defaults** (lowest priority)
-
-## Installation
+### Installation
 
 ```bash
-pip install itl-k8s-oidc
+pip install itl-kubectl-oidc-setup
 ```
 
-## Usage Examples
+### Usage
 
-### Minimal setup
-Uses the baked-in default issuer for ITlusions realm:
+Simply run the tool and follow the interactive prompts:
 
 ```bash
-itl-oidc-setup --verify
+itl-kubectl-oidc-setup
 ```
 
-### Custom issuer
-Override the default issuer:
+### Advanced Usage
 
 ```bash
-itl-oidc-setup --issuer-url https://your-keycloak.example.com/realms/yourrealm
+# Specify a custom cluster name
+itl-kubectl-oidc-setup --cluster my-cluster
+
+# Skip authentication testing
+itl-kubectl-oidc-setup --no-test
+
+# Use custom Keycloak URL
+itl-kubectl-oidc-setup --keycloak-url https://auth.example.com
+
+# Help
+itl-kubectl-oidc-setup --help
 ```
 
-### Device code flow
-For headless environments or when browser auth isn't available:
+## 📋 Prerequisites
+
+- Python 3.8 or higher
+- Internet connection for downloading kubectl/kubelogin (if needed)
+- Access to ITlusions Kubernetes cluster
+
+## 🔧 What It Does
+
+1. **Detects your operating system** and architecture
+2. **Checks for kubectl** and installs it if missing:
+   - Windows: Uses `winget`
+   - macOS: Uses `homebrew`
+   - Linux: Downloads from official Kubernetes releases
+3. **Installs kubelogin plugin**:
+   - First tries `krew` (if available)
+   - Falls back to direct download
+4. **Configures OIDC authentication** with ITlusions Keycloak:
+   - Sets up cluster configuration
+   - Configures user authentication
+   - Sets context and namespace
+5. **Tests authentication** to ensure everything works
+6. **Provides next steps** and usage instructions
+
+## 🏗️ Configuration
+
+The tool configures kubectl with the following OIDC settings:
+
+- **Issuer URL**: `https://sts.itlusions.com/realms/itlusions`
+- **Client ID**: `kubernetes-oidc`
+- **Username Claim**: `preferred_username`
+- **Groups Claim**: `groups`
+
+## 🔐 Authentication Flow
+
+1. Run `kubectl get pods` (or any kubectl command)
+2. Browser opens automatically for authentication
+3. Login with your ITlusions credentials
+4. Return to terminal - you're authenticated!
+
+## 🛠️ Development
+
+### Local Development
 
 ```bash
-itl-oidc-setup --device-code
+# Clone the repository
+git clone https://github.com/ITlusions/itl-kubectl-oidc-setup.git
+cd itl-kubectl-oidc-setup
+
+# Install in development mode
+pip install -e .
+
+# Install development dependencies
+pip install -e .[dev]
+
+# Run the tool
+itl-kubectl-oidc-setup
 ```
 
-### Enterprise setup
-With custom CA certificate and kubeconfig:
+### Running Tests
 
 ```bash
-itl-oidc-setup --ca-file /path/to/ca.crt --kubeconfig ~/.kube/prod-config --verify
+pytest
 ```
 
-### Save as defaults
-Persist your configuration for future use:
+### Code Formatting
 
 ```bash
-itl-oidc-setup --issuer-url https://sso.itlusions.com/realms/itlusions --save-default
+black kubectl_oidc_setup/
+flake8 kubectl_oidc_setup/
 ```
 
-## Configuration
+## 📁 Project Structure
 
-### Environment Variables
-
-```bash
-export ITL_OIDC_ISSUER_URL="https://your-keycloak.example.com/realms/yourrealm"
-export ITL_OIDC_CLIENT_ID="custom-client"
-export ITL_OIDC_SCOPES="openid,profile,email,groups"
-itl-oidc-setup
+```
+itl-kubectl-oidc-setup/
+├── itl_kubectl_oidc_setup/
+│   ├── __init__.py          # Package metadata and exports
+│   └── __main__.py          # Main application logic
+├── setup.py                 # Package installation configuration
+├── requirements.txt         # Python dependencies
+├── README.md               # This file
+└── LICENSE                 # MIT License
 ```
 
-### Configuration File
+## 🔧 Troubleshooting
 
-The tool reads configuration from `~/.config/itl-k8s-oidc/config.json` (Linux/macOS) or `%APPDATA%\itl-k8s-oidc\config.json` (Windows):
+### Common Issues
 
-```json
-{
-  "issuer_url": "https://sts.itlusions.com/realms/itlusions",
-  "client_id": "kubelogin",
-  "scopes": "openid,profile,email"
-}
-```
+**kubectl not found after installation**
+- Restart your terminal/shell
+- Check your PATH environment variable
 
-### All CLI Options
+**kubelogin plugin fails to install**
+- The tool will try multiple installation methods
+- Check if you have proper permissions
 
-```bash
-itl-oidc-setup --help
-```
+**Authentication browser doesn't open**
+- Manually copy the URL from terminal output
+- Check your default browser settings
 
-**Main options:**
-- `--issuer-url`: OIDC issuer URL
-- `--client-id`: OIDC client ID (default: kubelogin)
-- `--scopes`: OIDC scopes (default: openid,profile,email)
-- `--device-code`: Use device code flow
-- `--ca-file`: Custom CA certificate file
-- `--kubeconfig`: Custom kubeconfig path
-- `--verify`: Verify auth after setup
-- `--save-default`: Save config as defaults
-- `--dry-run`: Show what would be done
-- `--no-install-krew`: Don't auto-install krew
-- `--no-install-plugin`: Don't auto-install oidc-login plugin
-- `--extra-arg`: Pass additional args to oidc-login (repeatable)
-- `--verbose`: Verbose output
+**Permission denied errors**
+- On Windows: Run as Administrator if needed
+- On macOS/Linux: Check file permissions
 
-## Default Configuration
+### Getting Help
 
-- **Default issuer**: `https://sts.itlusions.com/realms/itlusions`
-- **Default client ID**: `kubelogin`
-- **Default scopes**: `openid,profile,email`
+1. Check the terminal output for detailed error messages
+2. Run with `--verbose` flag for more detailed logging
+3. Open an issue on [GitHub](https://github.com/ITlusions/itl-kubectl-oidc-setup/issues)
 
-## Notes
+## 🤝 Contributing
 
-- Uses **public OIDC client with PKCE** for security
-- Supports **device code flow** for headless environments
-- Works on **Linux, macOS, and Windows**
-- Automatically handles **krew and plugin installation**
-- Clean error messages and non-zero exit codes on failure
+We welcome contributions! Please:
 
-## License
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-MIT License - see [LICENSE](LICENSE) file for details.
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🏢 About ITlusions
+
+This tool is developed and maintained by ITlusions. For more information about our services and infrastructure, visit [www.itlusions.com](https://www.itlusions.com).
+
+## 🔗 Related Projects
+
+- [ITL.K8s](https://github.com/ITlusions/ITL.K8s) - Kubernetes cluster configuration
+- [ITL.Keycloack.Tenants](https://github.com/ITlusions/ITL.Keycloack.Tenants) - Keycloak tenant management
+- [ITL.ArgoCD](https://github.com/ITlusions/ITL.ArgoCD) - ArgoCD configuration and applications
+
+---
+
+Made with ❤️ by [ITlusions](https://www.itlusions.com)

@@ -1,34 +1,133 @@
 [build-system]
-requires = ["setuptools>=80", "wheel"]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "itl-k8s-oidc"
-version = "1.0.2"
-description = "Kubernetes OIDC via Keycloak + kubelogin automation."
+name = "itl-kubectl-oidc-setup"
+dynamic = ["version"]
+description = "Automated kubectl OIDC setup tool for ITlusions Kubernetes clusters"
 readme = "README.md"
-requires-python = ">=3.8"
-license = { text = "MIT" }
-authors = [{ name = "ITlusions", email = "noreply@example.com" }]
-keywords = ["kubernetes","oidc","keycloak","kubelogin","krew"]
+license = {text = "MIT"}
+authors = [
+    {name = "ITlusions", email = "info@itlusions.com"}
+]
+maintainers = [
+    {name = "ITlusions", email = "info@itlusions.com"}
+]
 classifiers = [
-  "Programming Language :: Python :: 3",
-  "Environment :: Console",
-  "Operating System :: OS Independent",
-  "License :: OSI Approved :: MIT License",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Internet :: WWW/HTTP :: Authentication",
+]
+keywords = [
+    "kubernetes",
+    "kubectl",
+    "oidc",
+    "keycloak",
+    "authentication",
+    "automation",
+    "devops",
+    "cloud",
+    "itlusions",
+]
+dependencies = [
+    "requests>=2.25.0",
+    "pyyaml>=6.0",
+    "colorama>=0.4.4",
+]
+requires-python = ">=3.8"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov>=2.0",
+    "black>=21.0",
+    "flake8>=3.8",
+    "mypy>=0.900",
 ]
 
 [project.scripts]
-itl-oidc-setup = "itl_k8s_oidc.cli:main"
+itl-kubectl-oidc-setup = "itl_kubectl_oidc_setup.__main__:main"
 
-[tool.setuptools.package-dir]
-"" = "src"
+[project.urls]
+Homepage = "https://github.com/ITlusions/itl-kubectl-oidc-setup"
+Repository = "https://github.com/ITlusions/itl-kubectl-oidc-setup"
+"Bug Reports" = "https://github.com/ITlusions/itl-kubectl-oidc-setup/issues"
+Documentation = "https://github.com/ITlusions/itl-kubectl-oidc-setup/wiki"
+ITlusions = "https://www.itlusions.com"
+
+[tool.setuptools.dynamic]
+version = {attr = "itl_kubectl_oidc_setup.__version__"}
 
 [tool.setuptools.packages.find]
-where = ["src"]
+include = ["itl_kubectl_oidc_setup*"]
 
-# setuptools-scm configuration - currently disabled in favor of static version
-# [tool.setuptools_scm]
-# tag_regex = "^v?(?P<version>[0-9]+\\.[0-9]+\\.[0-9]+)$"
-# fallback_version = "1.0.2"
-# write_to = "src/itl_k8s_oidc/_version.py"
+[tool.setuptools.package-data]
+itl_kubectl_oidc_setup = ["*.yaml", "*.yml", "*.json"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=itl_kubectl_oidc_setup",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
+select = ["C", "E", "F", "W", "B", "B950"]
+per-file-ignores = [
+    "__init__.py:F401",
+]

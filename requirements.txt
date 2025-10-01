@@ -1,0 +1,11 @@
+# Core dependencies for itl-kubectl-oidc-setup
+requests>=2.25.0
+pyyaml>=6.0
+colorama>=0.4.4
+
+# Development dependencies (install with: pip install -e .[dev])
+# pytest>=6.0
+# pytest-cov>=2.0
+# black>=21.0
+# flake8>=3.8
+# mypy>=0.900

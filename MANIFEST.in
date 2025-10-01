@@ -1,0 +1,11 @@
+include README.md
+include LICENSE
+include requirements.txt
+include *.md
+include *.txt
+include *.yaml
+include *.yml
+recursive-include kubectl_oidc_setup *.py
+recursive-include kubectl_oidc_setup *.yaml
+recursive-include kubectl_oidc_setup *.yml
+recursive-include kubectl_oidc_setup *.json
