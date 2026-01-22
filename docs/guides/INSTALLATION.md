@@ -1,8 +1,41 @@
 # Installation and Usage Guide
 
-## Quick Installation
+## 🚀 Zero-Click Installation (Recommended)
 
-### Option 1: Direct pip install (Recommended)
+The fastest way to get started with ITLAuth is using our zero-click installers:
+
+### 🐧 Linux / 🍎 macOS
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ITlusions/ITLAuth/main/install.sh | bash
+```
+
+Or using wget:
+```bash
+wget -qO- https://raw.githubusercontent.com/ITlusions/ITLAuth/main/install.sh | bash
+```
+
+### 🪟 Windows (PowerShell)
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/ITlusions/ITLAuth/main/install.ps1 | iex
+```
+
+Or the long form:
+```powershell
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/ITlusions/ITLAuth/main/install.ps1 -UseBasicParsing | Invoke-Expression
+```
+
+**What the installer does:**
+- ✓ Checks Python 3.8+ installation
+- ✓ Installs pip if needed
+- ✓ Installs itl-kubectl-oidc-setup package
+- ✓ Verifies installation
+- ✓ Provides next steps
+
+## 📦 Standard Installation Methods
+
+### Option 1: Direct pip install
 
 ```bash
 pip install itl-kubectl-oidc-setup
@@ -149,6 +182,34 @@ contexts:
   name: itlusions-cluster
 current-context: itlusions-cluster
 ```
+
+## ✓ Verify Installation
+
+After installation, verify everything is working:
+
+### Quick Verification
+
+```bash
+# Check if command is available
+itl-kubectl-oidc-setup --version
+
+# Run verification script
+python -c "$(curl -fsSL https://raw.githubusercontent.com/ITlusions/ITLAuth/main/verify-install.py)"
+```
+
+Or download and run the verification script:
+```bash
+curl -fsSL https://raw.githubusercontent.com/ITlusions/ITLAuth/main/verify-install.py -o verify-install.py
+python verify-install.py
+```
+
+The verification script checks:
+- ✓ Python version (3.8+)
+- ✓ pip availability
+- ✓ Package installation
+- ✓ Command availability
+- ✓ kubectl presence (optional)
+- ✓ kubeconfig existence (optional)
 
 ## Troubleshooting
 

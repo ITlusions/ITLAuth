@@ -1,17 +1,12 @@
 # ITLAuth - ITlusions Authentication Suite
 
-🚀 **Complete## 📚 Documentation
-
-### 📖 Complete Documentation Hub
-- **[📋 Documentation Index](docs/index.md)** - Complete navigation and overview of all documentation
-
-### 📖 User Guides
-- **[Installation Guide](docs/guides/INSTALLATION.md)** - Complete installation and setup instructions
-- **[API Server Setup](docs/guides/APISERVER-OIDC-SETUP.md)** - Configure Kubernetes API server for OIDC
-- **[Troubleshooting Guide](docs/guides/TROUBLESHOOTING.md)** - Common issues and solutions
-- **[Service Account Management](docs/guides/SERVICE-ACCOUNTS.md)** - Keycloak service account setuputhentication solution for ITlusions Kubernetes clusters**
+🚀 **Complete authentication solution for ITlusions Kubernetes clusters**
 
 ITLAuth provides automated tools and comprehensive guides for setting up OIDC authentication with ITlusions Kubernetes clusters using Keycloak. This suite includes automated setup tools, API server configuration scripts, and service account management utilities.
+
+[![PyPI version](https://badge.fury.io/py/itl-kubectl-oidc-setup.svg)](https://badge.fury.io/py/itl-kubectl-oidc-setup)
+[![Python Support](https://img.shields.io/pypi/pyversions/itl-kubectl-oidc-setup.svg)](https://pypi.org/project/itl-kubectl-oidc-setup/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## ✨ Components
 
@@ -35,41 +30,58 @@ ITLAuth provides automated tools and comprehensive guides for setting up OIDC au
 - **Configuration validation** and testing
 - **Troubleshooting scripts** and diagnostics
 
-## 🚀 Quick Start
+## 🚀 Zero-Click Installation
 
-### Option 1: Python Package Installation
+Get started instantly with our zero-click installers:
+
+### 🐧 Linux / 🍎 macOS
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ITlusions/ITLAuth/main/install.sh | bash
+```
+
+Or using wget:
+```bash
+wget -qO- https://raw.githubusercontent.com/ITlusions/ITLAuth/main/install.sh | bash
+```
+
+### 🪟 Windows (PowerShell)
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/ITlusions/ITLAuth/main/install.ps1 | iex
+```
+
+Or the long form:
+```powershell
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/ITlusions/ITLAuth/main/install.ps1 -UseBasicParsing | Invoke-Expression
+```
+
+## 📦 Alternative Installation Methods
+
+### Option 1: Python Package (pip)
 
 ```bash
 pip install itl-kubectl-oidc-setup
 itl-kubectl-oidc-setup
 ```
 
-### Option 2: Manual Script Execution
+### Option 2: From Source
 
 ```bash
-# Clone this repository
 git clone https://github.com/ITlusions/ITLAuth.git
 cd ITLAuth
-
-# Run the setup script
-python docs/scripts/setup_kubectl_oidc.py
+pip install .
+itl-kubectl-oidc-setup
 ```
 
-### Option 3: PowerShell (Windows)
+## 📚 Documentation
 
-```powershell
-# Clone this repository
-git clone https://github.com/ITlusions/ITLAuth.git
-cd ITLAuth
-
-# Run PowerShell setup
-.\docs\scripts\Setup-KubectlOIDC.ps1
-```
-
-## � Documentation
+### 🚀 Getting Started
+- **[Quick Start Guide](QUICKSTART.md)** - Get up and running in 2 minutes
+- **[Installation Guide](docs/guides/INSTALLATION.md)** - Complete installation and setup instructions
+- **[PyPI Checklist](PYPI_CHECKLIST.md)** - Package publication readiness guide
 
 ### 📖 User Guides
-- **[Installation Guide](docs/guides/INSTALLATION.md)** - Complete installation and setup instructions
 - **[API Server Setup](docs/guides/APISERVER-OIDC-SETUP.md)** - Configure Kubernetes API server for OIDC
 - **[Troubleshooting Guide](docs/guides/TROUBLESHOOTING.md)** - Common issues and solutions
 - **[Service Account Management](docs/guides/SERVICE-ACCOUNTS.md)** - Keycloak service account setup
