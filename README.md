@@ -74,10 +74,14 @@ pip install .
 itl-kubectl-oidc-setup
 ```
 
-## � Documentation
+## 📚 Documentation
+
+### 🚀 Getting Started
+- **[Quick Start Guide](QUICKSTART.md)** - Get up and running in 2 minutes
+- **[Installation Guide](docs/guides/INSTALLATION.md)** - Complete installation and setup instructions
+- **[PyPI Checklist](PYPI_CHECKLIST.md)** - Package publication readiness guide
 
 ### 📖 User Guides
-- **[Installation Guide](docs/guides/INSTALLATION.md)** - Complete installation and setup instructions
 - **[API Server Setup](docs/guides/APISERVER-OIDC-SETUP.md)** - Configure Kubernetes API server for OIDC
 - **[Troubleshooting Guide](docs/guides/TROUBLESHOOTING.md)** - Common issues and solutions
 - **[Service Account Management](docs/guides/SERVICE-ACCOUNTS.md)** - Keycloak service account setup
