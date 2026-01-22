@@ -109,12 +109,21 @@ def check_command_available():
                 ["itl-kubectl-oidc-setup", "--version"],
                 capture_output=True,
                 text=True,
-                check=True
+                check=True,
+                timeout=5
             )
-            version = result.stdout.strip().split()[-1]
-            print(f"  {check_mark(True)} Version: {version}")
-        except (subprocess.CalledProcessError, IndexError):
-            print(f"  {check_mark(False)} Could not determine version")
+            # Parse version more robustly
+            output = result.stdout.strip()
+            if output:
+                # Extract version number from output
+                parts = output.split()
+                if len(parts) >= 2:
+                    version = parts[-1]
+                    print(f"  {check_mark(True)} Version: {version}")
+                else:
+                    print(f"  {check_mark(True)} Version check successful")
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired, IndexError) as e:
+            print(f"  {check_mark(False)} Could not determine version: {e}")
         
         return True
     else:
@@ -124,12 +133,16 @@ def check_command_available():
         home = Path.home()
         common_paths = [
             home / ".local" / "bin" / "itl-kubectl-oidc-setup",
-            home / "Library" / "Python" / "3.8" / "bin" / "itl-kubectl-oidc-setup",
-            home / "Library" / "Python" / "3.9" / "bin" / "itl-kubectl-oidc-setup",
-            home / "Library" / "Python" / "3.10" / "bin" / "itl-kubectl-oidc-setup",
-            home / "Library" / "Python" / "3.11" / "bin" / "itl-kubectl-oidc-setup",
-            home / "Library" / "Python" / "3.12" / "bin" / "itl-kubectl-oidc-setup",
         ]
+        
+        # Add Python Library paths dynamically for macOS
+        if sys.platform == "darwin":
+            python_lib_base = home / "Library" / "Python"
+            if python_lib_base.exists():
+                for version_dir in python_lib_base.iterdir():
+                    if version_dir.is_dir():
+                        bin_path = version_dir / "bin" / "itl-kubectl-oidc-setup"
+                        common_paths.append(bin_path)
         
         for path in common_paths:
             if path.exists():

@@ -118,13 +118,23 @@ function Test-Pip {
         
         Invoke-WebRequest -Uri $getPipUrl -OutFile $getPipScript -UseBasicParsing
         & $script:PythonCommand $getPipScript --user
-        Remove-Item $getPipScript -Force
+        
+        # Clean up temporary file
+        if (Test-Path $getPipScript) {
+            Remove-Item $getPipScript -Force -ErrorAction SilentlyContinue
+        }
         
         Write-Success "pip installed"
         return $true
     }
     catch {
         Write-Error "Failed to install pip: $_"
+        
+        # Attempt cleanup even on error
+        if (Test-Path $getPipScript) {
+            Remove-Item $getPipScript -Force -ErrorAction SilentlyContinue
+        }
+        
         return $false
     }
 }
@@ -137,7 +147,14 @@ function Install-Package {
         # Try user installation first
         $installArgs = @("-m", "pip", "install", "--user", "itl-kubectl-oidc-setup")
         
-        $process = Start-Process -FilePath $script:PythonCommand -ArgumentList $installArgs -Wait -NoNewWindow -PassThru -RedirectStandardOutput "$env:TEMP\pip-stdout.txt" -RedirectStandardError "$env:TEMP\pip-stderr.txt"
+        $stdoutFile = Join-Path $env:TEMP "pip-stdout-$([guid]::NewGuid()).txt"
+        $stderrFile = Join-Path $env:TEMP "pip-stderr-$([guid]::NewGuid()).txt"
+        
+        $process = Start-Process -FilePath $script:PythonCommand -ArgumentList $installArgs -Wait -NoNewWindow -PassThru -RedirectStandardOutput $stdoutFile -RedirectStandardError $stderrFile
+        
+        # Clean up temp files
+        Remove-Item $stdoutFile -Force -ErrorAction SilentlyContinue
+        Remove-Item $stderrFile -Force -ErrorAction SilentlyContinue
         
         if ($process.ExitCode -eq 0) {
             Write-Success "Package installed successfully"
