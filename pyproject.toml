@@ -45,6 +45,7 @@ dependencies = [
     "requests>=2.25.0",
     "pyyaml>=6.0",
     "colorama>=0.4.4",
+    "click>=8.0.0",
 ]
 requires-python = ">=3.8"
 
@@ -59,6 +60,7 @@ dev = [
 
 [project.scripts]
 itl-kubectl-oidc-setup = "itl_kubectl_oidc_setup.__main__:main"
+itlc = "itlc.__main__:cli"
 
 [project.urls]
 Homepage = "https://github.com/ITlusions/itl-kubectl-oidc-setup"
@@ -71,10 +73,12 @@ ITlusions = "https://www.itlusions.com"
 version = {attr = "itl_kubectl_oidc_setup.__version__"}
 
 [tool.setuptools.packages.find]
-include = ["itl_kubectl_oidc_setup*"]
+where = ["src", "."]
+include = ["itl_kubectl_oidc_setup*", "itlc*"]
 
 [tool.setuptools.package-data]
 itl_kubectl_oidc_setup = ["*.yaml", "*.yml", "*.json"]
+itlc = ["*.yaml", "*.yml", "*.json"]
 
 [tool.black]
 line-length = 88

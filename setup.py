@@ -56,6 +56,7 @@ setup(
         'requests>=2.25.0',
         'pyyaml>=6.0',
         'colorama>=0.4.4',
+        'click>=8.0.0',
     ],
     extras_require={
         'dev': [
@@ -69,6 +70,7 @@ setup(
     entry_points={
         'console_scripts': [
             'itl-kubectl-oidc-setup=itl_kubectl_oidc_setup.__main__:main',
+            'itlc=itlc.__main__:cli',
         ],
     },
     include_package_data=True,

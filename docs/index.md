@@ -12,6 +12,14 @@ Welcome to the ITLAuth documentation. This comprehensive guide covers all aspect
 ### 📚 User Guides
 - [**Service Accounts Management**](guides/SERVICE-ACCOUNTS.md) - Keycloak and Kubernetes service accounts
 - [**Troubleshooting Guide**](guides/TROUBLESHOOTING.md) - Common issues and solutions
+- [**Custom STS Setup**](guides/CUSTOM_STS_SETUP.md) - Configure ITLC for your own Keycloak/OIDC server
+
+### � Security
+- [**Realm Isolation**](REALM_ISOLATION.md) - How ITLC implements realm-based security boundaries
+
+### �🔧 ITLC Token CLI
+- [**Interactive Login**](INTERACTIVE_LOGIN.md) - Browser-based OAuth authentication- [**Realm Discovery & Switching**](REALM_DISCOVERY.md) - Find and switch between Keycloak realms- [**Token CLI Documentation**](../src/itlc/README.md) - Complete ITLC command reference
+- [**Custom STS Configuration**](guides/CUSTOM_STS_SETUP.md) - Use ITLC with your own authentication server
 
 ### 🛠️ Scripts & Automation
 - [**Scripts Overview**](scripts/README.md) - All automation scripts

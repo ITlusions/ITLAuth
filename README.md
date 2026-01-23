@@ -17,6 +17,7 @@ ITLAuth provides automated tools and comprehensive guides for setting up OIDC au
 - **Offline capable** - Embedded fallback configuration
 - **Cross-platform** - Windows, macOS, Linux
 - **Four contexts** - Direct and SSH tunnel for each auth mode
+- **Token management CLI** - Azure kubelogin-inspired token manager (`itlc`)
 
 ## Zero-Click Installation
 
@@ -98,6 +99,70 @@ kubectl → Python/Binary Auth Plugin → Token Cache Check → Browser Login (i
 - **Binary** (`itl`, `itl-ssh-tunnel`) - kubelogin executable, traditional flow
 
 **Setup Flow**: Run tool → Try API download → Fallback to embedded config → Configure 4 contexts → Test authentication
+
+## ITL Token Manager CLI
+
+Manage Keycloak API tokens with Azure CLI-inspired interface:
+
+### Interactive Login (NEW!)
+
+```bash
+# Browser-based login (like 'az login')
+itlc login
+
+# Check who you are
+itlc whoami
+
+# Manage realms/tenants
+itlc realm list
+itlc realm set production
+
+# Logout
+itlc logout
+```
+
+### Service Account (CI/CD)
+
+```bash
+# Get access token
+itlc get-token --client-id=my-app --client-secret=secret
+
+# Or use environment variables
+export KEYCLOAK_CLIENT_ID=my-app
+export KEYCLOAK_CLIENT_SECRET=secret
+itlc get-token
+
+# Inspect JWT token
+itlc inspect <token> --decode
+
+# Show configuration
+itlc config
+
+# Clear cache
+itlc clear-cache --all
+```
+
+Features:
+- ✅ **Interactive login**: Browser-based OAuth flow (like `az login`)
+- ✅ **Realm management**: Switch between realms/tenants
+- ✅ **User identity**: Show current user info (`whoami`)
+- ✅ Token acquisition with client credentials
+- ✅ Automatic caching in `~/.itl/token-cache/`
+- ✅ Environment variable credential discovery
+- ✅ JWT inspection and Keycloak introspection
+- ✅ Multiple output formats (json, token, table)
+- ✅ Realm discovery (find available realms before login)
+
+See [Interactive Login Guide](docs/INTERACTIVE_LOGIN.md) and [Token CLI Documentation](src/itlc/README.md) for details.
+
+### Using ITLC with Your Own Keycloak/STS
+
+ITLC can be configured to work with any Keycloak or OIDC-compliant server:
+
+- 🔧 **Setup Guide**: [Custom STS Configuration](docs/guides/CUSTOM_STS_SETUP.md)
+- 🎨 **Branding**: Customize callback pages
+- 🌍 **Multi-realm**: Switch between dev/staging/prod
+- 🔐 **Enterprise**: Corporate proxy and custom scopes
 
 ## Development
 
