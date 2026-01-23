@@ -35,12 +35,76 @@ class Colors:
 class KubectlOIDCSetup:
     """Main setup class for kubectl OIDC configuration."""
     
+    # Default fallback cluster configuration
+    DEFAULT_CLUSTER_CONFIG = """apiVersion: v1
+kind: Config
+preferences: {}
+current-context: itl
+clusters:
+  - cluster:
+      insecure-skip-tls-verify: true
+      server: https://10.99.100.4:6443
+      tls-server-name: 10.99.100.4
+    name: kubernetes
+  - cluster:
+      insecure-skip-tls-verify: true
+      server: https://127.0.0.1:16643
+      tls-server-name: 10.99.100.4
+    name: kubernetes-ssh-tunnel
+contexts:
+  - context:
+      cluster: kubernetes
+      user: oidc-user
+    name: itl
+  - context:
+      cluster: kubernetes-ssh-tunnel
+      user: oidc-user
+    name: itl-ssh-tunnel
+  - context:
+      cluster: kubernetes
+      user: oidc-user-python
+    name: itl-python
+  - context:
+      cluster: kubernetes-ssh-tunnel
+      user: oidc-user-python
+    name: itl-ssh-tunnel-python
+users:
+  - name: oidc-user
+    user:
+      exec:
+        apiVersion: client.authentication.k8s.io/v1beta1
+        args:
+          - get-token
+          - '--oidc-issuer-url=https://sts.itlusions.com/realms/itlusions'
+          - '--oidc-client-id=kubernetes-oidc'
+        command: kubectl-oidc_login
+        env: null
+        interactiveMode: IfAvailable
+        provideClusterInfo: false
+  - name: oidc-user-python
+    user:
+      exec:
+        apiVersion: client.authentication.k8s.io/v1beta1
+        args:
+          - -m
+          - itl_kubectl_oidc_setup.auth
+        command: python
+        env: null
+        interactiveMode: IfAvailable
+        provideClusterInfo: false
+"""
+    
     def __init__(self):
         self.system = platform.system().lower()
         self.arch = platform.machine().lower()
         self.home_dir = Path.home()
         self.kubectl_dir = self.home_dir / ".kubectl"
         self.plugins_dir = self.kubectl_dir / "plugins"
+        self.kubectl_exe = None  # Will store full path if manually installed
+        self.kubeconfig_path = self.home_dir / ".kube" / "config"
+        
+        # Default cluster config URL - Update this to your API endpoint
+        self.default_cluster_config_url = "https://cluster-config-api.itlusions.com/api/v1/cluster-config"
         
         # OIDC Configuration
         self.oidc_config = {
@@ -65,6 +129,10 @@ class KubectlOIDCSetup:
         try:
             if isinstance(command, str):
                 command = command.split()
+            
+            # If we have a manually installed kubectl and command uses kubectl, use full path
+            if self.kubectl_exe and command[0] == "kubectl":
+                command[0] = self.kubectl_exe
             
             result = subprocess.run(
                 command,
@@ -119,10 +187,22 @@ class KubectlOIDCSetup:
         """Install kubectl on Windows."""
         try:
             # Try winget first
-            result = self.run_command("winget install -e --id Kubernetes.kubectl", check=False)
+            result = self.run_command("winget install -e --id Kubernetes.kubectl --silent", check=False)
             if result and result.returncode == 0:
                 print(f"{Colors.GREEN}✅ kubectl installed via winget{Colors.END}")
-                return True
+                
+                # Wait a moment for winget to complete
+                import time
+                time.sleep(2)
+                
+                # Refresh PATH by reading from registry
+                self._refresh_windows_path()
+                
+                # Verify installation
+                if self.check_kubectl():
+                    return True
+                else:
+                    print(f"{Colors.YELLOW}⚠️ winget completed but kubectl not yet in PATH, falling back to manual install{Colors.END}")
             
             # Fallback to manual download
             print(f"{Colors.YELLOW}⬇️ Downloading kubectl manually...{Colors.END}")
@@ -136,17 +216,90 @@ class KubectlOIDCSetup:
             self.kubectl_dir.mkdir(exist_ok=True)
             urllib.request.urlretrieve(kubectl_url, kubectl_path)
             
-            # Add to PATH if not already there
+            # Add to current session PATH immediately
             kubectl_dir_str = str(self.kubectl_dir)
             current_path = os.environ.get("PATH", "")
             if kubectl_dir_str not in current_path:
-                print(f"{Colors.YELLOW}⚠️ Add {kubectl_dir_str} to your PATH environment variable{Colors.END}")
+                os.environ["PATH"] = f"{kubectl_dir_str};{current_path}"
+                print(f"{Colors.GREEN}✅ Added {kubectl_dir_str} to PATH for this session{Colors.END}")
+            
+            # Add to user PATH permanently
+            if self._add_to_user_path_permanently(kubectl_dir_str):
+                print(f"{Colors.GREEN}✅ kubectl will be available in all future terminals{Colors.END}")
+            else:
+                print(f"{Colors.YELLOW}💡 To use kubectl in new terminals, restart them or log off/on{Colors.END}")
+            
+            # Store kubectl path for use in subsequent commands
+            self.kubectl_exe = str(kubectl_path)
             
             print(f"{Colors.GREEN}✅ kubectl downloaded to {kubectl_path}{Colors.END}")
             return True
             
         except Exception as e:
             print(f"{Colors.RED}❌ Failed to install kubectl: {e}{Colors.END}")
+            return False
+    
+    def _refresh_windows_path(self):
+        """Refresh PATH from Windows registry."""
+        try:
+            import winreg
+            
+            # Read user PATH
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, 'Environment', 0, winreg.KEY_READ) as key:
+                user_path, _ = winreg.QueryValueEx(key, 'Path')
+            
+            # Read system PATH
+            with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 0, winreg.KEY_READ) as key:
+                system_path, _ = winreg.QueryValueEx(key, 'Path')
+            
+            # Update current session PATH
+            os.environ["PATH"] = f"{user_path};{system_path}"
+            
+        except Exception:
+            pass  # Silently fail, we have fallback
+    
+    def _add_to_user_path_permanently(self, directory):
+        """Add directory to user PATH permanently via registry."""
+        try:
+            import winreg
+            
+            directory = str(directory)
+            
+            # Open user environment key for reading
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, 'Environment', 0, winreg.KEY_READ) as key:
+                try:
+                    current_path, _ = winreg.QueryValueEx(key, 'Path')
+                except FileNotFoundError:
+                    current_path = ""
+            
+            # Check if already in PATH
+            path_entries = [p.strip() for p in current_path.split(';') if p.strip()]
+            if directory in path_entries:
+                return True
+            
+            # Add to PATH
+            new_path = f"{current_path};{directory}" if current_path else directory
+            
+            # Write back to registry
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, 'Environment', 0, winreg.KEY_WRITE) as key:
+                winreg.SetValueEx(key, 'Path', 0, winreg.REG_EXPAND_SZ, new_path)
+            
+            # Broadcast environment change
+            import ctypes
+            HWND_BROADCAST = 0xFFFF
+            WM_SETTINGCHANGE = 0x1A
+            SMTO_ABORTIFHUNG = 0x0002
+            result = ctypes.c_long()
+            ctypes.windll.user32.SendMessageTimeoutW(
+                HWND_BROADCAST, WM_SETTINGCHANGE, 0, "Environment",
+                SMTO_ABORTIFHUNG, 5000, ctypes.byref(result)
+            )
+            
+            print(f"{Colors.GREEN}✅ Permanently added {directory} to user PATH{Colors.END}")
+            return True
+            
+        except Exception as e:
+            print(f"{Colors.YELLOW}⚠️ Could not update PATH permanently: {e}{Colors.END}")
             return False
 
     def _install_kubectl_macos(self):
@@ -246,18 +399,20 @@ class KubectlOIDCSetup:
         print(f"{Colors.YELLOW}⬇️ Downloading kubelogin manually...{Colors.END}")
         
         try:
-            version = "v0.1.1"  # Latest stable version
+            version = "v1.35.2"  # Latest stable version from https://github.com/int128/kubelogin
             
             if self.system == "windows":
                 url = f"https://github.com/int128/kubelogin/releases/download/{version}/kubelogin_windows_amd64.zip"
                 return self._download_and_extract_zip(url, "kubelogin.exe", "kubectl-oidc_login.exe")
             elif self.system == "darwin":
-                url = f"https://github.com/int128/kubelogin/releases/download/{version}/kubelogin_darwin_amd64.tar.gz"
-                return self._download_and_extract_tar(url, "kubelogin", "kubectl-oidc_login")
+                # macOS uses arm64 for Apple Silicon, amd64 for Intel
+                arch = "arm64" if self.arch in ["arm64", "aarch64"] else "amd64"
+                url = f"https://github.com/int128/kubelogin/releases/download/{version}/kubelogin_darwin_{arch}.zip"
+                return self._download_and_extract_zip(url, "kubelogin", "kubectl-oidc_login")
             elif self.system == "linux":
-                arch = "amd64" if self.arch in ["x86_64", "amd64"] else "arm64"
-                url = f"https://github.com/int128/kubelogin/releases/download/{version}/kubelogin_linux_{arch}.tar.gz"
-                return self._download_and_extract_tar(url, "kubelogin", "kubectl-oidc_login")
+                arch = "arm64" if self.arch in ["arm64", "aarch64"] else "arm" if self.arch.startswith("arm") else "amd64"
+                url = f"https://github.com/int128/kubelogin/releases/download/{version}/kubelogin_linux_{arch}.zip"
+                return self._download_and_extract_zip(url, "kubelogin", "kubectl-oidc_login")
             
         except Exception as e:
             print(f"{Colors.RED}❌ Failed to install kubelogin: {e}{Colors.END}")
@@ -380,21 +535,180 @@ class KubectlOIDCSetup:
         
         return True
 
-    def run_setup(self, cluster_context=None, test_auth=True):
+    def download_cluster_config(self, config_url=None, use_fallback=True):
+        """Download cluster configuration from URL and merge with kubeconfig."""
+        if not config_url:
+            config_url = self.default_cluster_config_url
+        
+        print(f"{Colors.YELLOW}📥 Downloading cluster configuration...{Colors.END}")
+        print(f"{Colors.BLUE}   URL: {config_url}{Colors.END}")
+        
+        cluster_config = None
+        
+        try:
+            import requests
+            
+            response = requests.get(config_url, timeout=10)
+            response.raise_for_status()
+            
+            cluster_config = response.text
+            print(f"{Colors.GREEN}✅ Downloaded cluster configuration from API{Colors.END}")
+            
+            # Create .kube directory if it doesn't exist
+            self.kubeconfig_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # If kubeconfig exists, backup first
+            if self.kubeconfig_path.exists():
+                backup_path = self.kubeconfig_path.with_suffix('.config.backup')
+                shutil.copy2(self.kubeconfig_path, backup_path)
+                print(f"{Colors.GREEN}✅ Backed up existing kubeconfig to {backup_path}{Colors.END}")
+                
+                # Merge configurations using kubectl
+                with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as tmp:
+                    tmp.write(cluster_config)
+                    tmp_path = tmp.name
+                
+                env = os.environ.copy()
+                env['KUBECONFIG'] = f"{self.kubeconfig_path}{os.pathsep}{tmp_path}"
+                
+                result = subprocess.run(
+                    [self.kubectl_exe or 'kubectl', 'config', 'view', '--flatten'],
+                    env=env,
+                    capture_output=True,
+                    text=True
+                )
+                
+                if result.returncode == 0:
+                    self.kubeconfig_path.write_text(result.stdout)
+                    os.unlink(tmp_path)
+                    print(f"{Colors.GREEN}✅ Merged cluster config with existing kubeconfig{Colors.END}")
+                else:
+                    os.unlink(tmp_path)
+                    raise Exception(f"Failed to merge configs: {result.stderr}")
+            else:
+                # No existing config, just write it
+                self.kubeconfig_path.write_text(cluster_config)
+                print(f"{Colors.GREEN}✅ Cluster configuration saved to {self.kubeconfig_path}{Colors.END}")
+            
+            # Get cluster name from config
+            result = self.run_command("kubectl config get-contexts -o name", check=False)
+            if result and result.returncode == 0:
+                contexts = result.stdout.strip().split('\n')
+                if contexts:
+                    print(f"{Colors.GREEN}✅ Available contexts:{Colors.END}")
+                    for ctx in contexts:
+                        print(f"   • {ctx}")
+            
+            return True
+            
+        except ImportError:
+            print(f"{Colors.YELLOW}⚠️ requests library not available{Colors.END}")
+            if use_fallback:
+                print(f"{Colors.CYAN}📦 Using embedded default configuration...{Colors.END}")
+                cluster_config = self.DEFAULT_CLUSTER_CONFIG
+            else:
+                return False
+        except Exception as e:
+            print(f"{Colors.YELLOW}⚠️ Failed to download cluster config: {e}{Colors.END}")
+            if use_fallback:
+                print(f"{Colors.CYAN}📦 Using embedded default configuration...{Colors.END}")
+                cluster_config = self.DEFAULT_CLUSTER_CONFIG
+            else:
+                print(f"{Colors.YELLOW}💡 Please check the URL or contact your cluster administrator{Colors.END}")
+                return False
+        
+        # Apply cluster config (either downloaded or fallback)
+        if not cluster_config:
+            return False
+            
+        try:
+            # Create .kube directory if it doesn't exist
+            self.kubeconfig_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # If kubeconfig exists, backup first
+            if self.kubeconfig_path.exists():
+                backup_path = self.kubeconfig_path.with_suffix('.config.backup')
+                shutil.copy2(self.kubeconfig_path, backup_path)
+                print(f"{Colors.GREEN}✅ Backed up existing kubeconfig to {backup_path}{Colors.END}")
+                
+                # Merge configurations using kubectl
+                with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as tmp:
+                    tmp.write(cluster_config)
+                    tmp_path = tmp.name
+                
+                env = os.environ.copy()
+                env['KUBECONFIG'] = f"{self.kubeconfig_path}{os.pathsep}{tmp_path}"
+                
+                result = subprocess.run(
+                    [self.kubectl_exe or 'kubectl', 'config', 'view', '--flatten'],
+                    env=env,
+                    capture_output=True,
+                    text=True
+                )
+                
+                if result.returncode == 0:
+                    self.kubeconfig_path.write_text(result.stdout)
+                    os.unlink(tmp_path)
+                    print(f"{Colors.GREEN}✅ Merged cluster config with existing kubeconfig{Colors.END}")
+                else:
+                    os.unlink(tmp_path)
+                    raise Exception(f"Failed to merge configs: {result.stderr}")
+            else:
+                # No existing config, just write it
+                self.kubeconfig_path.write_text(cluster_config)
+                print(f"{Colors.GREEN}✅ Cluster configuration saved to {self.kubeconfig_path}{Colors.END}")
+            
+            # Get cluster name from config
+            result = self.run_command("kubectl config get-contexts -o name", check=False)
+            if result and result.returncode == 0:
+                contexts = result.stdout.strip().split('\n')
+                if contexts:
+                    print(f"{Colors.GREEN}✅ Available contexts:{Colors.END}")
+                    for ctx in contexts:
+                        print(f"   • {ctx}")
+            
+            return True
+        except Exception as e:
+            print(f"{Colors.RED}❌ Failed to apply cluster config: {e}{Colors.END}")
+            return False
+
+    def run_setup(self, cluster_context=None, test_auth=True, download_config=False, config_url=None, python_only=False):
         """Run the complete setup process."""
         self.print_header()
+        
+        if python_only:
+            print(f"{Colors.CYAN}🐍 Python-only mode: Skipping kubelogin binary installation{Colors.END}")
         
         # Check and install kubectl
         if not self.check_kubectl():
             if not self.install_kubectl():
                 print(f"{Colors.RED}❌ Setup failed: Could not install kubectl{Colors.END}")
                 return False
+            
+            # Verify kubectl is now accessible
+            print(f"{Colors.YELLOW}🔍 Verifying kubectl installation...{Colors.END}")
+            if not self.check_kubectl():
+                # Try using full path if available
+                if self.kubectl_exe:
+                    print(f"{Colors.YELLOW}💡 Using kubectl from: {self.kubectl_exe}{Colors.END}")
+                else:
+                    print(f"{Colors.RED}❌ kubectl installed but not accessible. Please restart your terminal.{Colors.END}")
+                    return False
         
-        # Check and install kubelogin
-        if not self.check_kubelogin():
-            if not self.install_kubelogin():
-                print(f"{Colors.YELLOW}⚠️ kubelogin plugin installation failed, but you can continue{Colors.END}")
-                print(f"{Colors.YELLOW}   Manual installation: https://github.com/int128/kubelogin{Colors.END}")
+        # Check and install kubelogin (skip if python_only)
+        if not python_only:
+            if not self.check_kubelogin():
+                if not self.install_kubelogin():
+                    print(f"{Colors.YELLOW}⚠️ kubelogin plugin installation failed, but you can continue{Colors.END}")
+                    print(f"{Colors.YELLOW}   Manual installation: https://github.com/int128/kubelogin{Colors.END}")
+        else:
+            print(f"{Colors.CYAN}⏭️  Skipping kubelogin binary check{Colors.END}")
+        
+        # Download cluster config if requested or if no context found
+        if download_config or config_url:
+            if not self.download_cluster_config(config_url):
+                print(f"{Colors.RED}❌ Setup failed: Could not download cluster config{Colors.END}")
+                return False
         
         # Configure OIDC
         if not self.configure_oidc(cluster_context):
@@ -431,9 +745,26 @@ Examples:
     )
     
     parser.add_argument(
+        "--download-config",
+        action="store_true",
+        help="Download cluster configuration from default URL"
+    )
+    
+    parser.add_argument(
+        "--config-url",
+        help="Custom URL to download cluster configuration from"
+    )
+    
+    parser.add_argument(
         "--no-test",
         action="store_true",
         help="Skip authentication test"
+    )
+    
+    parser.add_argument(
+        "--python-only",
+        action="store_true",
+        help="Skip kubelogin binary installation, configure Python auth only"
     )
     
     parser.add_argument(
@@ -449,7 +780,10 @@ Examples:
     try:
         success = setup.run_setup(
             cluster_context=args.cluster,
-            test_auth=not args.no_test
+            test_auth=not args.no_test,
+            download_config=args.download_config,
+            config_url=args.config_url,
+            python_only=args.python_only
         )
         
         sys.exit(0 if success else 1)

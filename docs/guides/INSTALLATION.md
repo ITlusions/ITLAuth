@@ -1,10 +1,10 @@
 # Installation and Usage Guide
 
-## 🚀 Zero-Click Installation (Recommended)
+## Zero-Click Installation (Recommended)
 
 The fastest way to get started with ITLAuth is using our zero-click installers:
 
-### 🐧 Linux / 🍎 macOS
+### Linux / macOS
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ITlusions/ITLAuth/main/install.sh | bash
@@ -15,7 +15,7 @@ Or using wget:
 wget -qO- https://raw.githubusercontent.com/ITlusions/ITLAuth/main/install.sh | bash
 ```
 
-### 🪟 Windows (PowerShell)
+### Windows (PowerShell)
 
 ```powershell
 iwr -useb https://raw.githubusercontent.com/ITlusions/ITLAuth/main/install.ps1 | iex
@@ -27,19 +27,24 @@ Invoke-WebRequest -Uri https://raw.githubusercontent.com/ITlusions/ITLAuth/main/
 ```
 
 **What the installer does:**
-- ✓ Checks Python 3.8+ installation
-- ✓ Installs pip if needed
-- ✓ Installs itl-kubectl-oidc-setup package
-- ✓ Verifies installation
-- ✓ Provides next steps
+- Checks Python 3.6+ installation
+- Installs pip if needed
+- Installs itl-kubectl-oidc-setup package with Python auth module
+- Verifies installation
+- Uses embedded fallback configuration if API unavailable
+- Provides next steps
 
-## 📦 Standard Installation Methods
+## Standard Installation Methods
 
 ### Option 1: Direct pip install
 
 ```bash
 pip install itl-kubectl-oidc-setup
-```
+# Standard: Both binary and Python auth
+itl-kubectl-oidc-setup
+
+# Python-only: Skip binary installation
+itl-kubectl-oidc-setup --python-only```
 
 ### Option 2: Install from source
 
@@ -103,19 +108,19 @@ itl-kubectl-oidc-setup --force-install
 ### Example Output
 
 ```
-🚀 ITlusions Kubernetes OIDC Setup Tool v1.0.0
+ITlusions Kubernetes OIDC Setup Tool v1.0.0
 
-✅ Checking operating system... Windows detected
-✅ Checking kubectl installation... Found at C:\Users\user\.local\bin\kubectl.exe
-✅ Checking kubelogin plugin... Found at C:\Users\user\.krew\bin\kubectl-oidc_login.exe
-⚙️  Configuring OIDC authentication...
-✅ Cluster configuration updated
-✅ User configuration updated  
-✅ Context set to: itlusions-cluster
-🔐 Testing authentication...
-✅ Authentication successful!
+Checking operating system... Windows detected
+Checking kubectl installation... Found at C:\Users\user\.local\bin\kubectl.exe
+Checking kubelogin plugin... Found at C:\Users\user\.krew\bin\kubectl-oidc_login.exe
+Configuring OIDC authentication...
+Cluster configuration updated
+User configuration updated  
+Context set to: itlusions-cluster
+Testing authentication...
+Authentication successful!
 
-🎉 Setup complete! You can now use kubectl with OIDC authentication.
+Setup complete! You can now use kubectl with OIDC authentication.
 
 Next steps:
 1. Try: kubectl get pods
@@ -125,6 +130,125 @@ Next steps:
 
 For help: itl-kubectl-oidc-setup --help
 ```
+
+## Authentication Methods
+
+ITLAuth provides two authentication methods. Both are configured automatically during setup.
+
+### Python Authentication Module (Recommended)
+
+**Contexts**: `itl-python`, `itl-ssh-tunnel-python`
+
+The native Python authentication module (`itl_kubectl_oidc_setup.auth`) provides:
+
+**Features**:
+- No binary dependencies required
+- Pure Python using only stdlib
+- PKCE-based OAuth2 flow (enhanced security)
+- Automatic token caching in `~/.kube/cache/oidc/`
+- Token refresh with 5-minute expiry buffer
+- Local callback server on port 8000
+- Seamless browser authentication
+
+**Configuration added to ~/.kube/config**:
+```yaml
+users:
+- name: oidc-user-python
+  user:
+    exec:
+      apiVersion: client.authentication.k8s.io/v1beta1
+      command: python
+      args:
+      - -m
+      - itl_kubectl_oidc_setup.auth
+      env: null
+      interactiveMode: IfAvailable
+      provideClusterInfo: false
+```
+
+**How it works**:
+1. kubectl executes `python -m itl_kubectl_oidc_setup.auth`
+2. Module checks for valid cached token in `~/.kube/cache/oidc/itlusions_token.json`
+3. If token valid (>5min remaining), returns it immediately
+4. Otherwise:
+   - Generates PKCE code verifier and challenge
+   - Starts local HTTP server on `localhost:8000`
+   - Opens browser to Keycloak login page with PKCE parameters
+   - User authenticates via Keycloak (EntraID/GitHub/password)
+   - Keycloak redirects to `localhost:8000/callback` with auth code
+   - Module exchanges auth code for ID token using PKCE
+   - Saves token to cache with expiry timestamp
+   - Returns token to kubectl in ExecCredential format
+
+**Requirements**:
+- Python 3.6+ (no external packages needed)
+- Port 8000 available for callback server
+- ~/.kube/cache/oidc/ directory writable (created automatically)
+
+**Usage**:
+```bash
+# Use Python auth context
+kubectl --context=itl-python get pods
+
+# Or via SSH tunnel
+kubectl --context=itl-ssh-tunnel-python get pods
+```
+
+### Binary Authentication (kubelogin)
+
+**Contexts**: `itl`, `itl-ssh-tunnel`
+
+The traditional kubelogin binary plugin provides:
+
+**Features**:
+- Well-tested, mature implementation
+- Widely used in Kubernetes community
+- Minimal setup required
+
+**Configuration added to ~/.kube/config**:
+```yaml
+users:
+- name: oidc-user
+  user:
+    exec:
+      apiVersion: client.authentication.k8s.io/v1beta1
+      command: ..\\.kubectl\\plugins\\kubectl-oidc_login.exe
+      args:
+      - get-token
+      - --oidc-issuer-url=https://sts.itlusions.com/realms/itlusions
+      - --oidc-client-id=kubernetes
+      - --oidc-extra-scope=groups
+```
+
+**Requirements**:
+- kubectl-oidc_login.exe binary (auto-installed by setup tool)
+- Platform-specific binary for your OS
+
+**Usage**:
+```bash
+# Use binary auth context
+kubectl --context=itl get pods
+
+# Or via SSH tunnel
+kubectl --context=itl-ssh-tunnel get pods
+```
+
+### Choosing Your Method
+
+**Use Python authentication if**:
+- You want minimal dependencies
+- Python is already installed on your system
+- You prefer pure Python implementation
+- Binary installation is restricted by policy
+- You want easier debugging and extension
+
+**Use binary authentication if**:
+- You need maximum compatibility
+- Python is not available
+- You prefer the mature, widely-used tool
+- You're already familiar with kubelogin
+
+Both methods provide identical authentication capabilities and can be used interchangeably.
 
 ## Authentication Flow
 
@@ -183,7 +307,7 @@ contexts:
 current-context: itlusions-cluster
 ```
 
-## ✓ Verify Installation
+## Verify Installation
 
 After installation, verify everything is working:
 
@@ -204,14 +328,93 @@ python verify-install.py
 ```
 
 The verification script checks:
-- ✓ Python version (3.8+)
-- ✓ pip availability
-- ✓ Package installation
-- ✓ Command availability
-- ✓ kubectl presence (optional)
-- ✓ kubeconfig existence (optional)
+- Python version (3.6+)
+- pip availability
+- Package installation
+- Command availability
+- kubectl presence (optional)
+- kubeconfig existence (optional)
+
+### Verify Python Auth Module
+
+```bash
+# Test Python auth module directly
+python -m itl_kubectl_oidc_setup.auth
+
+# Should output ExecCredential JSON or open browser for authentication
+```
+
+### Verify Contexts
+
+```bash
+# List all configured contexts
+kubectl config get-contexts
+
+# Should show:
+#   itl                      (binary auth, direct)
+#   itl-ssh-tunnel          (binary auth, SSH tunnel)
+#   itl-python              (Python auth, direct)
+#   itl-ssh-tunnel-python   (Python auth, SSH tunnel)
+
+# Test Python authentication
+kubectl --context=itl-python get nodes
+```
 
 ## Troubleshooting
+
+### Python Authentication Issues
+
+**Port 8000 already in use**
+```bash
+# Find what's using port 8000
+# Windows:
+netstat -ano | findstr :8000
+
+# Linux/macOS:
+lsof -i :8000
+
+# Solutions:
+# 1. Stop the conflicting application
+# 2. Use binary authentication instead: kubectl --context=itl get pods
+```
+
+**ImportError: No module named itl_kubectl_oidc_setup**
+```bash
+# Reinstall the package
+pip install --force-reinstall itl-kubectl-oidc-setup
+
+# Verify installation
+pip show itl-kubectl-oidc-setup
+python -c "import itl_kubectl_oidc_setup.auth; print('OK')"
+```
+
+**Token cache permission errors**
+```bash
+# Check cache directory
+ls -la ~/.kube/cache/oidc/
+
+# Fix permissions (Linux/macOS)
+chmod 700 ~/.kube/cache/oidc
+chmod 600 ~/.kube/cache/oidc/*.json
+
+# Windows - ensure only your user has access
+# Right-click folder → Properties → Security → Advanced
+```
+
+**Browser doesn't open automatically**
+```bash
+# Copy the URL from terminal output manually
+# Look for: "Open this URL in your browser: http://localhost:8000/..."
+
+# Paste into browser and complete authentication
+```
+
+**"exec plugin: invalid apiVersion" error**
+```yaml
+# Ensure ~/.kube/config has correct apiVersion
+# Should be: client.authentication.k8s.io/v1beta1
+# NOT: client.authentication.k8s.io/v1alpha1
+```
 
 ### kubectl not found after installation
 
