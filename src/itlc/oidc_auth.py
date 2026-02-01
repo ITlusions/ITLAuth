@@ -14,7 +14,7 @@ Usage in kubeconfig:
             command: python
             args:
               - -m
-              - itl_kubectl_oidc_setup.auth
+              - itlc.oidc_auth
 """
 
 import json

@@ -13,6 +13,8 @@ from datetime import datetime
 from .keycloak_client import KeycloakClient
 from .token_cache import token_cache
 from .interactive_auth import InteractiveAuth
+from .clusters import ClustersManager, OIDC_CONTEXTS
+from .cluster_commands import cluster
 
 
 ASCII_BANNER = r"""
@@ -627,6 +629,10 @@ def logout():
     except Exception as e:
         print_error(f"Error: {str(e)}")
         sys.exit(1)
+
+
+# Register cluster command group with main CLI
+cli.add_command(cluster)
 
 
 if __name__ == '__main__':
