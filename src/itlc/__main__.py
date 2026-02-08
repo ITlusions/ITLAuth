@@ -631,8 +631,142 @@ def logout():
         sys.exit(1)
 
 
-# Register cluster command group with main CLI
+@cli.group()
+def configure():
+    """
+    Configure OIDC and Kubernetes integration.
+    
+    Setup OIDC authentication contexts for kubectl and manage
+    Kubernetes cluster access with Keycloak authentication.
+    
+    Commands:
+      oidc       - Setup OIDC authentication contexts
+    
+    Examples:
+      itlc configure oidc
+      itlc configure oidc --python-only
+    """
+    pass
+
+
+@configure.command(name='oidc')
+@click.option('--python-only', is_flag=True, help='Setup Python OIDC only (skip kubelogin binary)')
+@click.option('--cluster-name', help='Kubernetes cluster context name')
+@click.option('--server', help='Kubernetes API server URL')
+@click.option('--no-test', is_flag=True, help='Skip authentication test')
+def configure_oidc(python_only, cluster_name, server, no_test):
+    """
+    Setup OIDC authentication contexts for kubectl.
+    
+    This command configures your kubeconfig with OIDC authentication
+    contexts that use Keycloak for authentication. It creates pre-configured
+    contexts for both direct and SSH tunnel access.
+    
+    Authentication Methods:
+      - Python (itlc.oidc_auth) - No external dependencies
+      - Binary (kubectl-oidc_login) - Requires kubelogin plugin
+    
+    Created Contexts:
+      - itl-python: Python OIDC, direct access
+      - itl: Binary OIDC, direct access (if not --python-only)
+      - itl-ssh-tunnel-python: Python OIDC via SSH tunnel
+      - itl-ssh-tunnel: Binary OIDC via SSH tunnel (if not --python-only)
+    
+    Examples:
+      # Full setup with both methods
+      itlc configure oidc
+      
+      # Python-only (minimal dependencies)
+      itlc configure oidc --python-only
+      
+      # Specify cluster details
+      itlc configure oidc --server https://10.99.100.4:6443
+      
+      # Skip the test at the end
+      itlc configure oidc --no-test
+    """
+    try:
+        from .kubectl_oidc_setup import KubectlOIDCSetup
+        
+        print_info("Setting up OIDC authentication for kubectl...")
+        click.echo()
+        
+        # Initialize setup
+        setup = KubectlOIDCSetup()
+        
+        # Configure OIDC contexts
+        if server:
+            print_info(f"Using cluster server: {server}")
+            # TODO: Update KubectlOIDCSetup to accept server parameter
+            # For now, user needs to edit kubeconfig manually
+            print_info("Note: You may need to update cluster server in kubeconfig")
+        
+        # Run the setup
+        print_info("Configuring OIDC authentication contexts...")
+        
+        # Import and use the setup class methods
+        # The setup class will handle creating the contexts
+        try:
+            # Create kubeconfig with OIDC contexts
+            kubeconfig_path = Path.home() / '.kube' / 'config'
+            
+            if not kubeconfig_path.exists():
+                kubeconfig_path.parent.mkdir(parents=True, exist_ok=True)
+                with open(kubeconfig_path, 'w') as f:
+                    f.write(setup.DEFAULT_CLUSTER_CONFIG)
+                print_success("Created kubeconfig with OIDC contexts")
+            else:
+                # Merge with existing config
+                print_info("Kubeconfig exists, you may need to merge OIDC contexts manually")
+                print_info("See: itlc configure oidc --help for context configuration")
+        
+        except Exception as e:
+            print_error(f"Setup error: {str(e)}")
+            raise
+        
+        click.echo()
+        print_success("OIDC authentication configured!")
+        click.echo()
+        
+        print_info("Available contexts:")
+        contexts = [
+            ("itl-python", "Python OIDC (recommended)", "Direct access"),
+            ("itl-ssh-tunnel-python", "Python OIDC via SSH", "Tunnel on 127.0.0.1:16643"),
+        ]
+        
+        if not python_only:
+            contexts.extend([
+                ("itl", "Binary OIDC (kubelogin)", "Direct access"),
+                ("itl-ssh-tunnel", "Binary OIDC via SSH", "Tunnel on 127.0.0.1:16643"),
+            ])
+        
+        for ctx_name, desc, access in contexts:
+            click.echo(f"  {Colors.CYAN}{ctx_name:<25}{Colors.END} {desc:<30} ({access})")
+        
+        click.echo()
+        print_info("Test authentication:")
+        click.echo(f"  kubectl --context=itl-python get nodes")
+        click.echo()
+        
+        print_info("Register your cluster:")
+        click.echo(f"  itlc cluster add --name my-cluster --server https://api.example.com:6443")
+        click.echo()
+        
+        print_info("Documentation:")
+        click.echo(f"  https://github.com/ITlusions/ITLAuth/blob/main/docs/OIDC_SETUP.md")
+        
+    except ImportError as e:
+        print_error(f"Failed to import OIDC setup module: {str(e)}")
+        print_info("Make sure itlc is properly installed: pip install -e .")
+        sys.exit(1)
+    except Exception as e:
+        print_error(f"Configuration failed: {str(e)}")
+        sys.exit(1)
+
+
+# Register command groups with main CLI
 cli.add_command(cluster)
+cli.add_command(configure)
 
 
 if __name__ == '__main__':

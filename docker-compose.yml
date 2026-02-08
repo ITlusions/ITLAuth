@@ -1,0 +1,47 @@
+# Docker Compose for ITLC CLI Testing
+# Provides an easy way to test the CLI with different configurations
+
+version: '3.8'
+
+services:
+  itlc-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: itlc:test
+    container_name: itlc-test
+    environment:
+      - KEYCLOAK_URL=https://sts.itlusions.com
+      - KEYCLOAK_REALM=itlusions
+      - CONTROLPLANE_URL=http://localhost:8000
+    volumes:
+      # Mount the source for live testing
+      - ./src:/app/src:ro
+      # Persist token cache between runs
+      - itlc-cache:/root/.itl
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+  # Optional: Run with different environment
+  itlc-production:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: itlc:test
+    container_name: itlc-production
+    environment:
+      - KEYCLOAK_URL=https://sts.itlusions.com
+      - KEYCLOAK_REALM=production
+      - CONTROLPLANE_GATEWAY_URL=https://api.itlusions.com
+    volumes:
+      - ./src:/app/src:ro
+      - itlc-prod-cache:/root/.itl
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+    profiles: ["production"]
+
+volumes:
+  itlc-cache:
+  itlc-prod-cache:

@@ -9,7 +9,7 @@ import re
 
 # Read version from __init__.py
 def get_version():
-    init_path = os.path.join('itl_kubectl_oidc_setup', '__init__.py')
+    init_path = os.path.join('src', 'itlc', '__init__.py')
     with open(init_path, 'r', encoding='utf-8') as f:
         content = f.read()
     version_match = re.search(r'^__version__ = [\'"]([^\'"]*)[\'"]', content, re.MULTILINE)
@@ -26,15 +26,16 @@ def get_long_description():
     return "ITlusions Kubernetes OIDC Setup Tool"
 
 setup(
-    name='itl-kubectl-oidc-setup',
+    name='itlc',
     version=get_version(),
     author='ITlusions',
     author_email='info@itlusions.com',
-    description='Automated kubectl OIDC setup tool for ITlusions Kubernetes clusters',
+    description='ITL Control Plane CLI - Keycloak authentication and resource management',
     long_description=get_long_description(),
     long_description_content_type='text/markdown',
-    url='https://github.com/ITlusions/itl-kubectl-oidc-setup',
-    packages=find_packages(),
+    url='https://github.com/ITlusions/ITLAuth',
+    packages=find_packages(where='src'),
+    package_dir={'': 'src'},
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
@@ -69,13 +70,12 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'itl-kubectl-oidc-setup=itl_kubectl_oidc_setup.__main__:main',
             'itlc=itlc.__main__:cli',
         ],
     },
     include_package_data=True,
     package_data={
-        'itl_kubectl_oidc_setup': ['*.yaml', '*.yml', '*.json'],
+        'itlc': ['*.yaml', '*.yml', '*.json', '*.html'],
     },
     keywords=[
         'kubernetes',
@@ -89,9 +89,9 @@ setup(
         'itlusions',
     ],
     project_urls={
-        'Bug Reports': 'https://github.com/ITlusions/itl-kubectl-oidc-setup/issues',
-        'Source': 'https://github.com/ITlusions/itl-kubectl-oidc-setup',
-        'Documentation': 'https://github.com/ITlusions/itl-kubectl-oidc-setup/wiki',
+        'Bug Reports': 'https://github.com/ITlusions/ITLAuth/issues',
+        'Source': 'https://github.com/ITlusions/ITLAuth',
+        'Documentation': 'https://github.com/ITlusions/ITLAuth',
         'ITlusions': 'https://www.itlusions.com',
     },
 )

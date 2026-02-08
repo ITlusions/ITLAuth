@@ -3,9 +3,9 @@ requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "itl-kubectl-oidc-setup"
+name = "itlc"
 dynamic = ["version"]
-description = "Automated kubectl OIDC setup tool for ITlusions Kubernetes clusters"
+description = "ITL Control Plane CLI - Keycloak authentication and resource management for ITlusions"
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [
@@ -59,26 +59,24 @@ dev = [
 ]
 
 [project.scripts]
-itl-kubectl-oidc-setup = "itl_kubectl_oidc_setup.__main__:main"
 itlc = "itlc.__main__:cli"
 
 [project.urls]
-Homepage = "https://github.com/ITlusions/itl-kubectl-oidc-setup"
-Repository = "https://github.com/ITlusions/itl-kubectl-oidc-setup"
-"Bug Reports" = "https://github.com/ITlusions/itl-kubectl-oidc-setup/issues"
-Documentation = "https://github.com/ITlusions/itl-kubectl-oidc-setup/wiki"
+Homepage = "https://github.com/ITlusions/ITLAuth"
+Repository = "https://github.com/ITlusions/ITLAuth"
+"Bug Reports" = "https://github.com/ITlusions/ITLAuth/issues"
+Documentation = "https://github.com/ITlusions/ITLAuth"
 ITlusions = "https://www.itlusions.com"
 
 [tool.setuptools.dynamic]
-version = {attr = "itl_kubectl_oidc_setup.__version__"}
+version = {attr = "itlc.__version__"}
 
 [tool.setuptools.packages.find]
-where = ["src", "."]
-include = ["itl_kubectl_oidc_setup*", "itlc*"]
+where = ["src"]
+include = ["itlc*"]
 
 [tool.setuptools.package-data]
-itl_kubectl_oidc_setup = ["*.yaml", "*.yml", "*.json"]
-itlc = ["*.yaml", "*.yml", "*.json"]
+itlc = ["*.yaml", "*.yml", "*.json", "*.html"]
 
 [tool.black]
 line-length = 88
@@ -107,10 +105,6 @@ addopts = [
     "-v",
     "--strict-markers",
     "--strict-config",
-    "--cov=itl_kubectl_oidc_setup",
-    "--cov-report=term-missing",
-    "--cov-report=html",
-    "--cov-report=xml",
 ]
 
 [tool.mypy]

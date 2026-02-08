@@ -1,223 +1,211 @@
-# ITLAuth - ITlusions Authentication Suite
+# ITLC - ITL Control Plane CLI
 
-**Complete authentication solution for ITlusions Kubernetes clusters**
+**Keycloak authentication and resource management CLI for ITlusions**
 
-ITLAuth provides automated tools and comprehensive guides for setting up OIDC authentication with ITlusions Kubernetes clusters using Keycloak. This suite includes automated setup tools, API server configuration scripts, service account management utilities, and a native Python authentication module.
+## Quick Start
 
-[![PyPI version](https://badge.fury.io/py/itl-kubectl-oidc-setup.svg)](https://badge.fury.io/py/itl-kubectl-oidc-setup)
-[![Python Support](https://img.shields.io/pypi/pyversions/itl-kubectl-oidc-setup.svg)](https://pypi.org/project/itl-kubectl-oidc-setup/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+```bash
+# Install
+pip install itlc
+
+# Setup OIDC authentication for kubectl
+itlc configure oidc
+
+# Interactive login
+itlc login
+
+# Check current user
+itlc whoami
+
+# Get service account token
+itlc get-token --client-id=my-app --client-secret=secret
+```
 
 ## Features
 
-- **Zero-click installation** - One command to get started
-- **Dual authentication** - Binary (kubelogin) or Python (native) modes
-- **PKCE OAuth2 flow** - Enhanced security with local callback server
-- **Token caching** - Automatic refresh, no repeated logins
-- **Offline capable** - Embedded fallback configuration
-- **Cross-platform** - Windows, macOS, Linux
-- **Four contexts** - Direct and SSH tunnel for each auth mode
-- **Token management CLI** - Azure kubelogin-inspired token manager (`itlc`)
+- ✅ **Interactive Authentication** - Browser-based OAuth login (Azure CLI-style)
+- ✅ **Token Management** - Automatic caching and refresh
+- ✅ **Realm Management** - Multi-tenant realm switching
+- ✅ **Resource Management** - Control Plane subscriptions, resource groups, locations
+- ✅ **Kubernetes Integration** - OIDC authentication for kubectl
+- ✅ **Service Accounts** - CI/CD automation support
+- ✅ **Cluster Management** - Register and manage Kubernetes clusters
 
-## Zero-Click Installation
+## Installation
 
-Get started instantly with our zero-click installers:
-
-### Linux / macOS
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/ITlusions/ITLAuth/main/install.sh | bash
-```
-
-Or using wget:
-```bash
-wget -qO- https://raw.githubusercontent.com/ITlusions/ITLAuth/main/install.sh | bash
-```
-
-### Windows (PowerShell)
-
-```powershell
-iwr -useb https://raw.githubusercontent.com/ITlusions/ITLAuth/main/install.ps1 | iex
-```
-
-Or the long form:
-```powershell
-Invoke-WebRequest -Uri https://raw.githubusercontent.com/ITlusions/ITLAuth/main/install.ps1 -UseBasicParsing | Invoke-Expression
-```
-
-## Alternative Installation Methods
-
-### Option 1: Python Package (pip)
-
-```bash
-pip install itl-kubectl-oidc-setup
-itl-kubectl-oidc-setup
-
-# Python auth only (skip kubelogin binary)
-itl-kubectl-oidc-setup --python-only
-```
-
-### Option 2: From Source
-
-```bash
-git clone https://github.com/ITlusions/ITLAuth.git
-cd ITLAuth
-pip install .
-itl-kubectl-oidc-setup
-```
-
-## Documentation
-
-### Getting Started
-- **[Quick Start Guide](QUICKSTART.md)** - Get up and running in 2 minutes
-- **[Installation Guide](docs/guides/INSTALLATION.md)** - Complete installation and setup instructions
-- **[Cluster Config Solution](CLUSTER-CONFIG-SOLUTION.md)** - Configuration distribution architecture
-- **[PyPI Checklist](PYPI_CHECKLIST.md)** - Package publication readiness guide
-
-### User Guides
-- **[API Server Setup](docs/guides/APISERVER-OIDC-SETUP.md)** - Configure Kubernetes API server for OIDC
-- **[Troubleshooting Guide](docs/guides/TROUBLESHOOTING.md)** - Common issues and solutions
-- **[Service Account Management](docs/guides/SERVICE-ACCOUNTS.md)** - Keycloak service account setup
-
-### Scripts and Tools
-- **[Setup Scripts](docs/scripts/)** - Automated setup and configuration scripts
-- **[PowerShell Modules](docs/scripts/)** - Windows-specific PowerShell tools
-- **[Python Utilities](docs/scripts/)** - Cross-platform Python tools
-- **[Bash Scripts](docs/scripts/)** - Linux/macOS shell scripts
-
-### Configuration Examples
-- **[kubeconfig Examples](docs/examples/)** - Sample kubeconfig files
-- **[RBAC Configurations](docs/examples/)** - Role-based access control examples
-- **[Keycloak Client Setup](docs/examples/)** - Keycloak client configuration
-
-## How It Works
-
-kubectl → Python/Binary Auth Plugin → Token Cache Check → Browser Login (if needed) → Keycloak OIDC → Token → Kubernetes API
-
-**Authentication Modes**:
-- **Python** (`itl-python`, `itl-ssh-tunnel-python`) - Pure Python, PKCE flow, port 8000 callback
-- **Binary** (`itl`, `itl-ssh-tunnel`) - kubelogin executable, traditional flow
-
-**Setup Flow**: Run tool → Try API download → Fallback to embedded config → Configure 4 contexts → Test authentication
-
-## ITL Token Manager CLI
-
-Manage Keycloak API tokens with Azure CLI-inspired interface:
-
-### Interactive Login (NEW!)
-
-```bash
-# Browser-based login (like 'az login')
-itlc login
-
-# Check who you are
-itlc whoami
-
-# Manage realms/tenants
-itlc realm list
-itlc realm set production
-
-# Logout
-itlc logout
-```
-
-### Service Account (CI/CD)
-
-```bash
-# Get access token
-itlc get-token --client-id=my-app --client-secret=secret
-
-# Or use environment variables
-export KEYCLOAK_CLIENT_ID=my-app
-export KEYCLOAK_CLIENT_SECRET=secret
-itlc get-token
-
-# Inspect JWT token
-itlc inspect <token> --decode
-
-# Show configuration
-itlc config
-
-# Clear cache
-itlc clear-cache --all
-```
-
-Features:
-- ✅ **Interactive login**: Browser-based OAuth flow (like `az login`)
-- ✅ **Realm management**: Switch between realms/tenants
-- ✅ **User identity**: Show current user info (`whoami`)
-- ✅ Token acquisition with client credentials
-- ✅ Automatic caching in `~/.itl/token-cache/`
-- ✅ Environment variable credential discovery
-- ✅ JWT inspection and Keycloak introspection
-- ✅ Multiple output formats (json, token, table)
-- ✅ Realm discovery (find available realms before login)
-
-See [Interactive Login Guide](docs/INTERACTIVE_LOGIN.md) and [Token CLI Documentation](src/itlc/README.md) for details.
-
-### Using ITLC with Your Own Keycloak/STS
-
-ITLC can be configured to work with any Keycloak or OIDC-compliant server:
-
-- 🔧 **Setup Guide**: [Custom STS Configuration](docs/guides/CUSTOM_STS_SETUP.md)
-- 🎨 **Branding**: Customize callback pages
-- 🌍 **Multi-realm**: Switch between dev/staging/prod
-- 🔐 **Enterprise**: Corporate proxy and custom scopes
-
-## Development
+### From Source
 
 ```bash
 git clone https://github.com/ITlusions/ITLAuth.git
 cd ITLAuth
 pip install -e .
-itl-kubectl-oidc-setup
-
-# Test Python auth module
-python -m itl_kubectl_oidc_setup.auth
 ```
 
-See [CLUSTER-CONFIG-SOLUTION.md](CLUSTER-CONFIG-SOLUTION.md) for API deployment.
+### Using pip (when published)
 
-## Troubleshooting
+```bash
+pip install itlc
+```
 
-| Issue | Solution |
-|-------|----------|
-| kubectl not found | Restart terminal or check PATH |
-| Port 8000 in use | Use binary auth: `kubectl --context=itl` |
-| Python import error | `pip install --force-reinstall itl-kubectl-oidc-setup` |
-| Browser doesn't open | Copy URL from terminal manually |
-| API unavailable | Tool auto-uses embedded fallback |
+## Documentation
 
-See [Full Troubleshooting Guide](docs/guides/TROUBLESHOOTING.md) or [open an issue](https://github.com/ITlusions/ITLAuth/issues).
+📚 **Complete documentation is available in the [docs/](docs/) folder:**
 
-## Authentication Methods
+- [Getting Started](docs/getting-started/README.md) - Installation and setup
+- [Authentication](docs/authentication/README.md) - Login, tokens, and realms
+- [Kubernetes Integration](docs/kubernetes/README.md) - OIDC setup and kubectl
+- [Resource Management](docs/RESOURCE_MANAGEMENT.md) - Control Plane resources
+- [Architecture](docs/architecture/README.md) - Design and security
+- [Examples](docs/examples/) - Configuration examples
+- [Scripts](docs/scripts/) - Automation scripts
+- [Archive](docs/archive/) - Additional guides and references
 
-**Python** (Recommended): `kubectl --context=itl-python get pods`
-- Pure Python, no binaries
-- PKCE flow on port 8000
-- Requires Python 3.6+
+## Environment Variables
 
-**Binary**: `kubectl --context=itl get pods`
-- Mature kubelogin implementation
-- Platform-specific executable
-- Widely used in community
+```bash
+export KEYCLOAK_URL=https://sts.itlusions.com       # Keycloak server
+export KEYCLOAK_REALM=itlusions                     # Keycloak realm
+export KEYCLOAK_CLIENT_ID=my-app                    # Service account client ID
+export KEYCLOAK_CLIENT_SECRET=secret                # Service account secret
+export CONTROLPLANE_URL=http://localhost:8000       # Control Plane API (direct)
+export CONTROLPLANE_GATEWAY_URL=https://api.itlusions.com  # API Gateway
+```
 
-Both authenticate via Keycloak (EntraID/GitHub/password). Use SSH tunnel contexts for remote access.
+## Common Commands
+
+### Authentication
+
+```bash
+# Interactive login
+itlc login
+
+# Check current user
+itlc whoami
+
+# Logout
+itlc logout
+```
+
+### Token Management
+
+```bash
+# Get access token
+itlc get-token
+
+# Inspect JWT token
+itlc inspect <token> --decode
+
+# List cached tokens
+itlc cache-list
+
+# Clear cache
+itlc clear-cache --all
+```
+
+### Realm Management
+
+```bash
+# List available realms
+itlc realm list
+
+# Switch realm
+itlc realm set production
+
+# Show realm info
+itlc realm info
+```
+
+### Resource Management
+
+```bash
+# Create subscription
+itlc resource subscription create --name my-sub --display-name "My Subscription"
+
+# List subscriptions
+itlc resource subscription list
+
+# Create resource group
+itlc resource resource-group create \
+  --subscription-id my-sub \
+  --name my-rg \
+  --location westeurope
+
+# List locations
+itlc resource location list
+```
+
+### Kubernetes Clusters
+
+```bash
+# Setup OIDC authentication
+itlc configure oidc
+
+# List registered clusters
+itlc cluster list
+
+# Add cluster
+itlc cluster add --name k8s-prod --server https://api.k8s.example.com
+
+# Use with kubectl
+kubectl --context=k8s-prod get nodes
+```
+
+## Development
+
+```bash
+# Clone repository
+git clone https://github.com/ITlusions/ITLAuth.git
+cd ITLAuth
+
+# Install in development mode
+pip install -e .
+
+# Run tests
+pytest
+
+# Run specific test
+python -m unittest tests.test_basic
+```
+
+## Project Structure
+
+```
+ITLAuth/
+├── src/itlc/              # Main CLI package
+│   ├── __main__.py        # CLI entry point
+│   ├── keycloak_client.py # Keycloak integration
+│   ├── interactive_auth.py# Browser-based login
+│   ├── token_cache.py     # Token caching
+│   ├── controlplane_client.py  # Control Plane API
+│   └── ...                # Other modules
+├── docs/                  # Documentation
+├── tests/                 # Test suite
+├── pyproject.toml         # Package configuration
+├── setup.py               # Setup script
+└── README.md              # This file
+```
 
 ## Contributing
 
-Fork → Create branch → Make changes → Update docs → Submit PR
+Contributions are welcome! Please:
 
-Guidelines: Follow existing style, add tests, test cross-platform, no emojis in docs.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add/update tests
+5. Submit a pull request
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Links
 
-[Installation](docs/guides/INSTALLATION.md) • [API Server Setup](docs/guides/APISERVER-OIDC-SETUP.md) • [Troubleshooting](docs/guides/TROUBLESHOOTING.md) • [Python Auth](itl_kubectl_oidc_setup/auth.py) • [Scripts](docs/scripts/) • [Examples](docs/examples/)
+- **Documentation**: [docs/](docs/)
+- **Repository**: https://github.com/ITlusions/ITLAuth
+- **Issues**: https://github.com/ITlusions/ITLAuth/issues
+- **ITlusions**: https://www.itlusions.com
 
 ---
 
-Made by [ITlusions](https://www.itlusions.com)
+**Made by [ITlusions](https://www.itlusions.com)** - Kubernetes • OIDC • Keycloak • Enterprise Auth
