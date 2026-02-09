@@ -62,10 +62,10 @@ dev = [
 itlc = "itlc.__main__:cli"
 
 [project.urls]
-Homepage = "https://github.com/ITlusions/ITLAuth"
-Repository = "https://github.com/ITlusions/ITLAuth"
-"Bug Reports" = "https://github.com/ITlusions/ITLAuth/issues"
-Documentation = "https://github.com/ITlusions/ITLAuth"
+Homepage = "https://github.com/ITlusions/ITL.ControlPlane.Cli"
+Repository = "https://github.com/ITlusions/ITL.ControlPlane.Cli"
+"Bug Reports" = "https://github.com/ITlusions/ITL.ControlPlane.Cli/issues"
+Documentation = "https://github.com/ITlusions/ITL.ControlPlane.Cli"
 ITlusions = "https://www.itlusions.com"
 
 [tool.setuptools.dynamic]

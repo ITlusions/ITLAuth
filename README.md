@@ -23,21 +23,21 @@ itlc get-token --client-id=my-app --client-secret=secret
 
 ## Features
 
-- ✅ **Interactive Authentication** - Browser-based OAuth login (Azure CLI-style)
-- ✅ **Token Management** - Automatic caching and refresh
-- ✅ **Realm Management** - Multi-tenant realm switching
-- ✅ **Resource Management** - Control Plane subscriptions, resource groups, locations
-- ✅ **Kubernetes Integration** - OIDC authentication for kubectl
-- ✅ **Service Accounts** - CI/CD automation support
-- ✅ **Cluster Management** - Register and manage Kubernetes clusters
+- **Interactive Authentication** - Browser-based OAuth login (Azure CLI-style)
+- **Token Management** - Automatic caching and refresh
+- **Realm Management** - Multi-tenant realm switching
+- **Core Resource Management** - Tenants, subscriptions, resource groups, management groups, locations
+- **Kubernetes Integration** - OIDC authentication for kubectl
+- **Service Accounts** - CI/CD automation support
+- **Cluster Management** - Register and manage Kubernetes clusters
 
 ## Installation
 
 ### From Source
 
 ```bash
-git clone https://github.com/ITlusions/ITLAuth.git
-cd ITLAuth
+git clone https://github.com/ITlusions/ITL.ControlPlane.Cli.git
+cd ITL.ControlPlane.Cli
 pip install -e .
 ```
 
@@ -54,7 +54,8 @@ pip install itlc
 - [Getting Started](docs/getting-started/README.md) - Installation and setup
 - [Authentication](docs/authentication/README.md) - Login, tokens, and realms
 - [Kubernetes Integration](docs/kubernetes/README.md) - OIDC setup and kubectl
-- [Resource Management](docs/RESOURCE_MANAGEMENT.md) - Control Plane resources
+- [Core Resources](docs/CORE_RESOURCES.md) - Tenants, subscriptions, resource groups via API Gateway
+- [Resource Management](docs/RESOURCE_MANAGEMENT.md) - Control Plane resources (legacy)
 - [Architecture](docs/architecture/README.md) - Design and security
 - [Examples](docs/examples/) - Configuration examples
 - [Scripts](docs/scripts/) - Automation scripts
@@ -118,20 +119,33 @@ itlc realm info
 ### Resource Management
 
 ```bash
+# Create tenant
+itlc tenant create my-tenant --display-name "My Tenant" --domain mycompany.com
+
+# List tenants
+itlc tenant list
+
 # Create subscription
-itlc resource subscription create --name my-sub --display-name "My Subscription"
+itlc subscription create my-sub --display-name "My Subscription" --tenant-id my-tenant
 
 # List subscriptions
-itlc resource subscription list
+itlc subscription list
 
 # Create resource group
-itlc resource resource-group create \
-  --subscription-id my-sub \
-  --name my-rg \
-  --location westeurope
+itlc resourcegroup create my-rg my-sub --location westeurope
+
+# Create management group hierarchy
+itlc managementgroup create root-mg --display-name "Organization Root"
+itlc managementgroup create platform-mg --display-name "Platform" --parent-id root-mg
+
+# List management groups
+itlc managementgroup list
 
 # List locations
-itlc resource location list
+itlc location list
+
+# Create custom location
+itlc location create my-datacenter --display-name "My Datacenter" --region "Netherlands" --location-type DataCenter
 ```
 
 ### Kubernetes Clusters
@@ -170,13 +184,14 @@ python -m unittest tests.test_basic
 ## Project Structure
 
 ```
-ITLAuth/
+ITL.ControlPlane.Cli/
 ├── src/itlc/              # Main CLI package
 │   ├── __main__.py        # CLI entry point
 │   ├── keycloak_client.py # Keycloak integration
 │   ├── interactive_auth.py# Browser-based login
 │   ├── token_cache.py     # Token caching
 │   ├── controlplane_client.py  # Control Plane API
+│   ├── core_commands.py   # Core resource commands
 │   └── ...                # Other modules
 ├── docs/                  # Documentation
 ├── tests/                 # Test suite
@@ -202,8 +217,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Links
 
 - **Documentation**: [docs/](docs/)
-- **Repository**: https://github.com/ITlusions/ITLAuth
-- **Issues**: https://github.com/ITlusions/ITLAuth/issues
+- **Repository**: https://github.com/ITlusions/ITL.ControlPlane.Cli
+- **Issues**: https://github.com/ITlusions/ITL.ControlPlane.Cli/issues
 - **ITlusions**: https://www.itlusions.com
 
 ---

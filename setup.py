@@ -33,7 +33,7 @@ setup(
     description='ITL Control Plane CLI - Keycloak authentication and resource management',
     long_description=get_long_description(),
     long_description_content_type='text/markdown',
-    url='https://github.com/ITlusions/ITLAuth',
+    url='https://github.com/ITlusions/ITL.ControlPlane.Cli',
     packages=find_packages(where='src'),
     package_dir={'': 'src'},
     classifiers=[

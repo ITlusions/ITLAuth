@@ -15,6 +15,7 @@ from .token_cache import token_cache
 from .interactive_auth import InteractiveAuth
 from .clusters import ClustersManager, OIDC_CONTEXTS
 from .cluster_commands import cluster
+from .core_commands import tenant, subscription, resourcegroup, location, managementgroup
 
 
 ASCII_BANNER = r"""
@@ -61,26 +62,48 @@ def print_info(msg):
 @click.version_option(version='1.0.0')
 def cli(ctx):
     """
-    ITL Token Manager - Keycloak API Token Management CLI
+    ITL Control Plane CLI - Unified Management Tool
     
-    Manage API tokens for ITlusions services using Keycloak service accounts.
-    Similar to Azure's 'az' CLI but for Keycloak.
+    Manage authentication, clusters, and cloud resources for the ITL Control Plane.
+    
+    Commands:
+        Authentication:
+            login              Interactive OIDC authentication
+            get-token          Get service account token
+            whoami             Show current authentication status
+        
+        Cluster Management:
+            cluster            Manage Kubernetes clusters
+            configure          Configure OIDC and cluster settings
+        
+        Core Resources (via API Gateway):
+            tenant             Manage tenants
+            subscription       Manage subscriptions
+            resourcegroup      Manage resource groups
+            location           List and query locations
     
     Environment Variables:
         KEYCLOAK_URL              Keycloak server URL (default: https://sts.itlusions.com)
         KEYCLOAK_REALM            Keycloak realm (default: itlusions)
         KEYCLOAK_CLIENT_ID        Service account client ID
         KEYCLOAK_CLIENT_SECRET    Service account client secret
+        CONTROLPLANE_API_URL      API Gateway URL (default: https://api.itlusions.com)
+        CONTROLPLANE_TOKEN        Authentication token for API Gateway
     
     Examples:
-        # Get token using credentials
+        # Authentication
+        itlc login
         itlc get-token --client-id=my-app --client-secret=secret
         
-        # Interactive login
-        itlc login
+        # Cluster Management
+        itlc cluster add --name prod --server https://prod.k8s.example.com:6443
+        itlc configure oidc
         
-        # Check current user
-        itlc whoami
+        # Core Resources
+        itlc tenant create my-tenant --domain acme.com
+        itlc subscription create my-sub --tenant-id tenant-001
+        itlc resourcegroup create my-rg sub-001 --location westeurope
+        itlc location list
     """
     # Show banner only when no command is provided (help screen)
     if ctx.invoked_subcommand is None:
@@ -767,6 +790,11 @@ def configure_oidc(python_only, cluster_name, server, no_test):
 # Register command groups with main CLI
 cli.add_command(cluster)
 cli.add_command(configure)
+cli.add_command(tenant)
+cli.add_command(subscription)
+cli.add_command(resourcegroup)
+cli.add_command(location)
+cli.add_command(managementgroup)
 
 
 if __name__ == '__main__':

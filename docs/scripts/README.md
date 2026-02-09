@@ -1,93 +1,85 @@
-# ITLAuth Scripts
+# ITL.ControlPlane.Cli Scripts
 
-This directory contains automation scripts for the ITLAuth authentication suite. Scripts are organized into functional categories.
+This directory contains automation scripts for ITL Control Plane CLI authentication suite, focused on server-side configuration and administrative operations.
+
+## ITLC CLI
+
+For client-side authentication and user workflows, use the `itlc` command-line tool:
+
+```bash
+pip install itlc
+itlc --help
+```
+
+**Common ITLC commands:**
+- `itlc configure oidc` - Setup OIDC kubeconfig contexts
+- `itlc login` - Interactive authentication
+- `itlc get-token` - Retrieve authentication tokens
+- `itlc cluster add` - Register new clusters
+
+See [OIDC_SETUP.md](../OIDC_SETUP.md) for complete ITLC usage guide.
+
+---
+
+## Scripts Overview
+
+Scripts in this directory handle server-side configuration and administrative tasks that are outside the scope of the ITLC CLI.
 
 ## Directory Structure
 
 ### `/oidc-setup/`
-Scripts for configuring OIDC authentication on Kubernetes API servers.
+Scripts for configuring OIDC authentication on Kubernetes API servers (server-side configuration).
 
-- `configure-apiserver-oidc.sh` - Main OIDC setup script for Linux
-- `configure-apiserver-oidc.ps1` - PowerShell version for Windows/cross-platform
-- `configure-apiserver-oidc-enhanced.sh` - Enhanced version with additional features
-- `check-oidc-config.sh` - Verification script to check OIDC configuration
+- `configure-apiserver-oidc.sh` - Configure API server OIDC flags (Linux)
+- `configure-apiserver-oidc.ps1` - Configure API server OIDC flags (Windows)
+- `configure-apiserver-oidc-enhanced.sh` - Enhanced configuration with validation
+- `check-oidc-config.sh` - Verify API server OIDC settings
 
 **Usage:**
 ```bash
-# Linux/macOS
+# Configure API server (requires control plane access)
 ./oidc-setup/configure-apiserver-oidc.sh
-
-# Windows PowerShell
-.\oidc-setup\configure-apiserver-oidc.ps1
 
 # Verify configuration
 ./oidc-setup/check-oidc-config.sh
 ```
 
-### `/service-accounts/`
-Scripts for managing Keycloak service accounts and Kubernetes service account integration.
+**Note:** These scripts configure the Kubernetes API server. For client-side kubeconfig setup, use `itlc configure oidc` instead.
 
-- `keycloak_sa_manager.py` - Python utility for managing Keycloak service accounts
-- `Create-KeycloakServiceAccount.ps1` - PowerShell script for service account creation
-- `create-keycloak-service-account.sh` - Bash script for service account creation
+### `/service-accounts/`
+Scripts for managing Keycloak service accounts and Kubernetes service account integration (administrative operations).
+
+- `keycloak_sa_manager.py` - Manage Keycloak service account clients
+- `Create-KeycloakServiceAccount.ps1` - Create service accounts (PowerShell)
+- `create-keycloak-service-account.sh` - Create service accounts (Bash)
 - `create-sa-kubeconfig.sh` - Generate kubeconfig for service accounts
 
 **Usage:**
 ```bash
-# Create service account with Python
+# Create Keycloak service account (requires admin credentials)
 python service-accounts/keycloak_sa_manager.py create --name my-service-account
 
-# Create with PowerShell
-.\service-accounts\Create-KeycloakServiceAccount.ps1 -ServiceAccountName "my-sa" -Description "My Service Account"
+# PowerShell version
+.\service-accounts\Create-KeycloakServiceAccount.ps1 -ServiceAccountName "my-sa"
 
-# Create kubeconfig for service account
+# Generate kubeconfig for CI/CD
 ./service-accounts/create-sa-kubeconfig.sh my-service-account
 ```
 
-### `/token-management/`
-Scripts for managing authentication tokens, token refresh, and persistent authentication.
-
-- `persistent_token_manager.py` - Python tool for managing persistent tokens
-- `generate_current_token.py` - Extract current user's authentication token
-- `create-persistent-token.sh` - Create long-lived authentication tokens
-- `manage-oidc-tokens.sh` - General token management utilities
-
-**Usage:**
-```bash
-# Generate current user token
-python token-management/generate_current_token.py
-
-# Create persistent token
-./token-management/create-persistent-token.sh
-
-# Manage tokens
-./token-management/manage-oidc-tokens.sh refresh
-```
+**Note:** These scripts are for administrative service account management. For user authentication, use `itlc login` instead.
 
 ## Prerequisites
 
-### Common Requirements
-- kubectl installed and configured
-- Access to Kubernetes cluster (for OIDC setup scripts)
-- Access to Keycloak admin console (for service account scripts)
-
-### Script-Specific Requirements
-
-**OIDC Setup Scripts:**
+### OIDC Setup Scripts
 - SSH access to Kubernetes control plane nodes
 - Kubernetes admin privileges
 - Backup of existing API server configuration
 
-**Service Account Scripts:**
+### Service Account Scripts
 - Keycloak admin credentials
-- Python 3.6+ (for Python scripts)
+- Python 3.8+ (for Python scripts)
 - PowerShell 5.1+ (for PowerShell scripts)
 - curl and jq (for bash scripts)
-
-**Token Management Scripts:**
-- Existing OIDC authentication setup
-- kubelogin plugin installed
-- Valid Keycloak user account
 
 ## Environment Variables
 
@@ -111,40 +103,30 @@ export OIDC_CLIENT_ID="kubernetes-oidc"
 
 ## Quick Start Examples
 
-### 1. Complete OIDC Setup
+### 1. OIDC API Server Setup
 ```bash
-# Configure API server with OIDC
+# Configure API server with OIDC (control plane)
 ./oidc-setup/configure-apiserver-oidc.sh
 
 # Verify configuration
 ./oidc-setup/check-oidc-config.sh
 
-# Test authentication
-kubectl oidc-login get-token --oidc-issuer-url=https://sts.itlusions.com/realms/itlusions --oidc-client-id=kubernetes-oidc
+# Setup client-side kubeconfig
+itlc configure oidc
 ```
 
-### 2. Service Account Workflow
+### 2. Service Account Creation
 ```bash
-# Create Keycloak service account
-python service-accounts/keycloak_sa_manager.py create --name monitoring-sa --description "Monitoring Service Account"
+# Create Keycloak service account (admin operation)
+python service-accounts/keycloak_sa_manager.py create \
+    --name monitoring-sa \
+    --description "Monitoring Service Account"
 
-# Create kubeconfig for the service account
+# Generate kubeconfig for service account
 ./service-accounts/create-sa-kubeconfig.sh monitoring-sa
 
 # Test service account access
 KUBECONFIG=./monitoring-sa-kubeconfig.yaml kubectl get pods
-```
-
-### 3. Token Management
-```bash
-# Extract current user token
-python token-management/generate_current_token.py > my-token.txt
-
-# Create persistent token for automation
-./token-management/create-persistent-token.sh automation-user
-
-# Set up token refresh
-./token-management/manage-oidc-tokens.sh setup-refresh
 ```
 
 ## Script Execution Policies
@@ -165,7 +147,6 @@ Ensure scripts have execute permissions:
 # Make scripts executable
 chmod +x oidc-setup/*.sh
 chmod +x service-accounts/*.sh
-chmod +x token-management/*.sh
 ```
 
 ## Safety and Backup
