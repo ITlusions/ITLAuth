@@ -4,7 +4,7 @@ Standalone client without Flask dependencies
 """
 import requests
 import os
-from typing import Optional, Dict
+from typing import Optional, Dict, Any
 from pathlib import Path
 
 
@@ -14,14 +14,14 @@ class KeycloakClient:
     No Flask dependencies - works from CLI.
     """
     
-    def __init__(self, keycloak_url: str = None, realm: str = None):
+    def __init__(self, keycloak_url: Optional[str] = None, realm: Optional[str] = None) -> None:
         self.keycloak_url = keycloak_url or os.getenv('KEYCLOAK_URL', 'https://sts.itlusions.com')
         self.realm = realm or os.getenv('KEYCLOAK_REALM', 'itlusions')
         
         # Remove trailing slash
         self.keycloak_url = self.keycloak_url.rstrip('/')
     
-    def get_access_token(self, client_id: str, client_secret: str) -> Optional[Dict]:
+    def get_access_token(self, client_id: str, client_secret: str) -> Optional[Dict[str, Any]]:
         """
         Get access token using client credentials flow.
         
@@ -54,7 +54,7 @@ class KeycloakClient:
             print(f"Error getting access token: {e}")
             return None
     
-    def introspect_token(self, token: str, client_id: str, client_secret: str) -> Optional[Dict]:
+    def introspect_token(self, token: str, client_id: str, client_secret: str) -> Optional[Dict[str, Any]]:
         """
         Introspect a token to check validity.
         
@@ -88,7 +88,7 @@ class KeycloakClient:
             print(f"Error introspecting token: {e}")
             return None
     
-    def get_credentials_from_env(self) -> Optional[Dict]:
+    def get_credentials_from_env(self) -> Optional[Dict[str, str]]:
         """
         Get credentials from environment variables.
         
