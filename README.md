@@ -18,6 +18,7 @@ ITLAuth provides automated tools and comprehensive guides for setting up OIDC au
 - **Cross-platform** - Windows, macOS, Linux
 - **Four contexts** - Direct and SSH tunnel for each auth mode
 - **Token management CLI** - Azure kubelogin-inspired token manager (`itlc`)
+- **Python SDK** - Type-safe Keycloak client for API integration
 
 ## Zero-Click Installation
 
@@ -155,6 +156,32 @@ Features:
 
 See [Interactive Login Guide](docs/INTERACTIVE_LOGIN.md) and [Token CLI Documentation](src/itlc/README.md) for details.
 
+## Python SDK for API Integration
+
+ITLAuth includes a type-safe Python SDK for integrating Keycloak authentication into your applications:
+
+```python
+from itlc import KeycloakClient, TokenCache
+
+# Get access token with client credentials
+client = KeycloakClient()
+token_response = client.get_access_token('client-id', 'secret')
+
+# Use token cache for automatic refresh
+cache = TokenCache()
+cached_token = cache.get_token('client-id')
+```
+
+Features:
+- ✅ **Type-safe interfaces**: Full type hints for IDE support
+- ✅ **Token acquisition**: Client credentials & PKCE flows
+- ✅ **Automatic caching**: Reuses ITLAuth's token cache pattern
+- ✅ **Environment discovery**: Auto-detect credentials from env vars
+- ✅ **Token introspection**: Validate tokens with Keycloak
+- ✅ **100% test coverage**: Comprehensive test suite
+
+See [SDK Usage Guide](docs/SDK_USAGE.md) for complete examples and API reference.
+
 ### Using ITLC with Your Own Keycloak/STS
 
 ITLC can be configured to work with any Keycloak or OIDC-compliant server:
@@ -216,7 +243,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Links
 
-[Installation](docs/guides/INSTALLATION.md) • [API Server Setup](docs/guides/APISERVER-OIDC-SETUP.md) • [Troubleshooting](docs/guides/TROUBLESHOOTING.md) • [Python Auth](itl_kubectl_oidc_setup/auth.py) • [Scripts](docs/scripts/) • [Examples](docs/examples/)
+[Installation](docs/guides/INSTALLATION.md) • [API Server Setup](docs/guides/APISERVER-OIDC-SETUP.md) • [Troubleshooting](docs/guides/TROUBLESHOOTING.md) • [Python Auth](itl_kubectl_oidc_setup/auth.py) • [SDK Usage](docs/SDK_USAGE.md) • [Scripts](docs/scripts/) • [Examples](docs/examples/)
 
 ---
 
