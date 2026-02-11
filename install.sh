@@ -21,31 +21,31 @@ NC='\033[0m' # No Color
 # Print functions
 print_header() {
     echo -e "${GREEN}${BOLD}"
-    echo "═══════════════════════════════════════════════════════"
+    echo "======================================================="
     echo "  ITLAuth Zero-Click Installer"
     echo "  ITlusions Authentication Suite"
-    echo "═══════════════════════════════════════════════════════"
+    echo "======================================================="
     echo -e "${NC}"
 }
 
 print_step() {
-    echo -e "${CYAN}▶ $1${NC}"
+    echo -e "${CYAN}[>] $1${NC}"
 }
 
 print_success() {
-    echo -e "${GREEN}✓ $1${NC}"
+    echo -e "${GREEN}[OK] $1${NC}"
 }
 
 print_error() {
-    echo -e "${RED}✗ $1${NC}"
+    echo -e "${RED}[ERROR] $1${NC}"
 }
 
 print_warning() {
-    echo -e "${YELLOW}⚠ $1${NC}"
+    echo -e "${YELLOW}[WARNING] $1${NC}"
 }
 
 print_info() {
-    echo -e "${BLUE}ℹ $1${NC}"
+    echo -e "${BLUE}[INFO] $1${NC}"
 }
 
 # Check if command exists
@@ -156,9 +156,9 @@ verify_installation() {
 # Print next steps
 print_next_steps() {
     echo ""
-    echo -e "${GREEN}${BOLD}╔═══════════════════════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}${BOLD}║           Installation Complete! 🎉                  ║${NC}"
-    echo -e "${GREEN}${BOLD}╚═══════════════════════════════════════════════════════╝${NC}"
+    echo -e "${GREEN}${BOLD}=======================================================${NC}"
+    echo -e "${GREEN}${BOLD}           Installation Complete!                     ${NC}"
+    echo -e "${GREEN}${BOLD}=======================================================${NC}"
     echo ""
     echo -e "${BOLD}Next Steps:${NC}"
     echo ""
@@ -170,9 +170,9 @@ print_next_steps() {
     echo -e "  ${CYAN}3. Authenticate with your ITlusions credentials${NC}"
     echo ""
     echo -e "${BOLD}Need Help?${NC}"
-    echo -e "  📖 Documentation: https://github.com/ITlusions/ITLAuth"
-    echo -e "  🐛 Issues: https://github.com/ITlusions/ITLAuth/issues"
-    echo -e "  🌐 Website: https://www.itlusions.com"
+    echo -e "  [DOCS] Documentation: https://github.com/ITlusions/ITLAuth"
+    echo -e "  [BUGS] Issues: https://github.com/ITlusions/ITLAuth/issues"
+    echo -e "  [WEB]  Website: https://www.itlusions.com"
     echo ""
 }
 
@@ -240,7 +240,7 @@ main() {
     
     # Reminder about PATH if needed
     if [[ $PATH_UPDATED -eq 1 ]]; then
-        echo -e "${YELLOW}${BOLD}⚠ IMPORTANT:${NC}"
+        echo -e "${YELLOW}${BOLD}[WARNING] IMPORTANT:${NC}"
         echo -e "${YELLOW}  For permanent access, add the following to your shell config:${NC}"
         echo -e "${BOLD}  export PATH=\"\$HOME/.local/bin:\$PATH\"${NC}"
         echo ""

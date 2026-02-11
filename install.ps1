@@ -22,36 +22,36 @@ function Write-ColorOutput {
 
 function Write-Header {
     Write-Host ""
-    Write-ColorOutput "═══════════════════════════════════════════════════════" "Green"
+    Write-ColorOutput "=======================================================" "Green"
     Write-ColorOutput "  ITLAuth Zero-Click Installer" "Green"
     Write-ColorOutput "  ITlusions Authentication Suite" "Green"
-    Write-ColorOutput "═══════════════════════════════════════════════════════" "Green"
+    Write-ColorOutput "=======================================================" "Green"
     Write-Host ""
 }
 
 function Write-Step {
     param([string]$Message)
-    Write-ColorOutput "▶ $Message" "Cyan"
+    Write-ColorOutput "[>] $Message" "Cyan"
 }
 
 function Write-Success {
     param([string]$Message)
-    Write-ColorOutput "✓ $Message" "Green"
+    Write-ColorOutput "[OK] $Message" "Green"
 }
 
 function Write-Error {
     param([string]$Message)
-    Write-ColorOutput "✗ $Message" "Red"
+    Write-ColorOutput "[ERROR] $Message" "Red"
 }
 
 function Write-Warning {
     param([string]$Message)
-    Write-ColorOutput "⚠ $Message" "Yellow"
+    Write-ColorOutput "[WARNING] $Message" "Yellow"
 }
 
 function Write-Info {
     param([string]$Message)
-    Write-ColorOutput "ℹ $Message" "Blue"
+    Write-ColorOutput "[INFO] $Message" "Blue"
 }
 
 # Check if command exists
@@ -218,9 +218,9 @@ function Test-Installation {
 # Print next steps
 function Write-NextSteps {
     Write-Host ""
-    Write-ColorOutput "╔═══════════════════════════════════════════════════════╗" "Green"
-    Write-ColorOutput "║           Installation Complete! 🎉                  ║" "Green"
-    Write-ColorOutput "╚═══════════════════════════════════════════════════════╝" "Green"
+    Write-ColorOutput "=======================================================" "Green"
+    Write-ColorOutput "           Installation Complete!                     " "Green"
+    Write-ColorOutput "=======================================================" "Green"
     Write-Host ""
     Write-Host "Next Steps:" -ForegroundColor White
     Write-Host ""
@@ -234,9 +234,9 @@ function Write-NextSteps {
     Write-ColorOutput "  4. Authenticate with your ITlusions credentials" "Cyan"
     Write-Host ""
     Write-Host "Need Help?" -ForegroundColor White
-    Write-Host "  📖 Documentation: https://github.com/ITlusions/ITLAuth"
-    Write-Host "  🐛 Issues: https://github.com/ITlusions/ITLAuth/issues"
-    Write-Host "  🌐 Website: https://www.itlusions.com"
+    Write-Host "  [DOCS] Documentation: https://github.com/ITlusions/ITLAuth"
+    Write-Host "  [BUGS] Issues: https://github.com/ITlusions/ITLAuth/issues"
+    Write-Host "  [WEB]  Website: https://www.itlusions.com"
     Write-Host ""
 }
 
@@ -292,7 +292,7 @@ function Install-ITLAuth {
     
     # Reminder about PATH if needed
     if ($pathNeedsRefresh) {
-        Write-ColorOutput "⚠ IMPORTANT:" "Yellow"
+        Write-ColorOutput "[WARNING] IMPORTANT:" "Yellow"
         Write-ColorOutput "  Please restart PowerShell to refresh your PATH" "Yellow"
         Write-Host ""
     }
