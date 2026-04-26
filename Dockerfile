@@ -1,17 +1,31 @@
 # Test Dockerfile for ITLC CLI
 # This allows testing the installation and CLI without affecting your system
 
-FROM python:3.11-slim
+FROM python:3.11-alpine AS builder
+
+WORKDIR /build
+
+# Install build dependencies
+RUN apk add --no-cache \
+    gcc \
+    musl-dev \
+    git
+
+# Copy and install
+COPY . .
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir --target ./python-packages -e .
+
+# ========== Runtime Stage ==========
+FROM python:3.11-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    git \
+# Install only runtime dependencies
+RUN apk add --no-cache \
     curl \
-    vim \
-    && rm -rf /var/lib/apt/lists/*
+    vim
 
 # Copy the entire project
 COPY . .

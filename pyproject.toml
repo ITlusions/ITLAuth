@@ -59,7 +59,7 @@ dev = [
 ]
 
 [project.scripts]
-itlc = "itlc.__main__:cli"
+# itlc CLI is now in d:\repos\ITL.ControlPlane.CLI — see ITL.ControlPlane.CLI repo
 
 [project.urls]
 Homepage = "https://github.com/ITlusions/ITL.ControlPlane.Cli"
